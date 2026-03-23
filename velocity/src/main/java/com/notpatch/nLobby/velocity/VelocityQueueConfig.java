@@ -47,8 +47,8 @@ public class VelocityQueueConfig {
                 }
 
                 this.enabled = getBoolean(queueConfig, "enabled", true);
+                this.queueServer = getString(queueConfig, "queue-server", "nlobby-limbo");
                 this.targetServers = getList(queueConfig, "target-servers", new ArrayList<>());
-                this.queueServer = getString(queueConfig, "queue-server", "lobby");
                 this.maxSlots = getInt(queueConfig, "max-slots", 5);
                 this.slotsPerTick = getInt(queueConfig, "slots-per-tick", 2);
                 this.tickInterval = getInt(queueConfig, "tick-interval", 5);
@@ -61,8 +61,8 @@ public class VelocityQueueConfig {
 
     private void loadDefaults() {
         this.enabled = true;
+        this.queueServer = "nlobby-limbo";
         this.targetServers = new ArrayList<>();
-        this.queueServer = "lobby";
         this.maxSlots = 5;
         this.slotsPerTick = 2;
         this.tickInterval = 5;

@@ -80,11 +80,15 @@ public class VelocityQueueListener {
                 " - Position: " + position + "/" + totalInQueue);
 
         // Redirect to limbo server
-        RegisteredServer limbo = queueManager.getLimboServer();
+        String limboServerName = queueManager.getConfig().getQueueServer();
+        RegisteredServer limbo = queueManager.getProxyServer()
+                .getServer(limboServerName)
+                .orElse(null);
+
         if (limbo != null) {
             event.setResult(ServerPreConnectEvent.ServerResult.allowed(limbo));
         } else {
-            logger.warning("Limbo server not available!");
+            logger.warning("Limbo server '" + limboServerName + "' not found!");
         }
     }
 

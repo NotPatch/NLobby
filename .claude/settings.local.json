@@ -7,7 +7,8 @@
       "Bash(ls:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"refactor: Switch to limbo-based queue system using ServerPreConnectEvent:*)",
-      "Bash(git commit -m \"feat: Add automatic virtual limbo server support:*)"
+      "Bash(git commit -m \"feat: Add automatic virtual limbo server support:*)",
+      "Bash(git commit -m \"fix: Add queue-server config and fix limbo server resolution:*)"
     ]
   }
 }

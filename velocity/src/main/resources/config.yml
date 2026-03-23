@@ -2,8 +2,13 @@
 queue:
   enabled: true
 
+  # Limbo sunucu adı (oyuncular queue sırasında burada bekler)
+  # LimboAPI'yı kullanıyorsan: "nlobby-limbo"
+  # Manuel Paper server'ı kullanıyorsan: "limbo" (veya kendi adını)
+  queue-server: "nlobby-limbo"
+
   # Queue kontrol edilecek sunucu adları
-  # Boş liste = tüm sunuculara giris queue kontrol edilir
+  # Boş liste = tüm sunuculara giriş queue kontrol edilir
   # Örnek: ["survival", "skywars"] - sadece bu sunuculara giriş queue kontrol edilir
   target-servers: []
 
