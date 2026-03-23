@@ -1,6 +1,7 @@
 package com.notpatch.nLobby.command;
 
 import com.notpatch.nLobby.LanguageLoader;
+import com.notpatch.nLobby.config.ConfigManager;
 import com.notpatch.nLobby.manager.QueueManager;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -12,13 +13,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class QueueCommand implements BasicCommand {
     private final QueueManager queueManager;
+    private final ConfigManager configManager;
 
-    public QueueCommand(QueueManager queueManager) {
+    public QueueCommand(QueueManager queueManager, ConfigManager configManager) {
         this.queueManager = queueManager;
+        this.configManager = configManager;
     }
 
     @Override
@@ -31,27 +35,43 @@ public class QueueCommand implements BasicCommand {
         }
 
         if (args.length < 2) {
-            sender.sendMessage("§c/queue <oyuncu> <sunucu>");
+            String usage = LanguageLoader.getMessage("queue.command.usage");
+            sender.sendMessage(usage);
             return;
         }
 
         String playerName = args[0];
         String serverName = args[1].toLowerCase();
 
+        List<String> validServers = configManager.getServers();
+        if (!validServers.contains(serverName)) {
+            String message = LanguageLoader.getMessage("queue.command.invalid-server");
+            message = message.replace("%server%", serverName);
+            sender.sendMessage(message);
+            return;
+        }
+
         Player player = Bukkit.getPlayer(playerName);
         if (player == null) {
-            sender.sendMessage("§c" + playerName + " adlı oyuncu bulunamadı.");
+            String message = LanguageLoader.getMessage("queue.command.player-not-found");
+            message = message.replace("%player%", playerName);
+            sender.sendMessage(message);
             return;
         }
 
         if (!player.isOnline()) {
-            sender.sendMessage("§c" + playerName + " adlı oyuncu çevrimdışı.");
+            String message = LanguageLoader.getMessage("queue.command.player-offline");
+            message = message.replace("%player%", playerName);
+            sender.sendMessage(message);
             return;
         }
 
         boolean joined = queueManager.joinQueue(player, serverName);
         if (joined) {
-            sender.sendMessage("§a" + player.getName() + " başarıyla " + serverName + " kuyruğuna eklendi.");
+            String message = LanguageLoader.getMessage("queue.command.success");
+            message = message.replace("%player%", player.getName());
+            message = message.replace("%server%", serverName);
+            sender.sendMessage(message);
         }
     }
 
@@ -69,8 +89,8 @@ public class QueueCommand implements BasicCommand {
                     .collect(Collectors.toList());
         } else if (args.length == 2) {
             String input = args[1].toLowerCase();
-            return java.util.Arrays.asList("survival", "skywars", "creative", "pvp").stream()
-                    .filter(server -> server.startsWith(input))
+            return configManager.getServers().stream()
+                    .filter(server -> server.toLowerCase().startsWith(input))
                     .collect(Collectors.toList());
         }
 
@@ -87,4 +107,5 @@ public class QueueCommand implements BasicCommand {
         return "nlobby.admin";
     }
 }
+
 

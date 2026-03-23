@@ -1,0 +1,4 @@
+libraries:
+  - 'com.github.notpatch:NLib:1.4.8'
+  - 'com.zaxxer:HikariCP:6.3.0'
+  - "org.xerial:sqlite-jdbc:3.46.0.0"

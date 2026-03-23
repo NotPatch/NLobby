@@ -1,0 +1,110 @@
+lang: tr_TR
+
+database:
+  type: SQLITE
+  host: localhost
+  port: 3306
+  name: nlobby
+  username: root
+  password: ""
+  pool-size: 5
+
+spawn:
+  location: "world,63.52990221049036,68.0,7.340390661540709,-179.85002,0.18861587"
+  teleport-on-join: true
+  teleport-on-death: true
+
+protection:
+  anti-damage: true
+  anti-hunger: true
+  anti-build: true
+  anti-item-pickup: true
+  lock-weather: true
+  lock-time: true
+  locked-time: 6000
+
+hotbar:
+  items:
+    navigator:
+      slot: 0
+      material: COMPASS
+      name: "&aNavigator"
+      lore:
+        - "&7Sunuculara göz at"
+      action: OPEN_NAVIGATOR
+    visibility:
+      slot: 4
+      material: ENDER_EYE
+      name: "&bOyuncuları Gizle/Göster"
+      lore:
+        - "&7Tıkla"
+      action: TOGGLE_VISIBILITY
+    jet:
+      slot: 8
+      material: FIREWORK_ROCKET
+      name: "&dJet"
+      lore:
+        - "&7Sol tık: ileri atıl"
+        - "&7Sağ tık: yukarı fırlat"
+      action: JET_BOOST
+
+jet:
+  enabled: true
+  permission-required: false
+  permission: nlobby.jet
+  cooldown-ms: 625
+  forward-power: 1.6
+  upward-power: 1.2
+
+double-jump:
+  enabled: true
+  permission-required: false
+  permission: nlobby.doublejump
+  velocity-multiplier: 1.5
+  particle: CLOUD
+  sound: ENTITY_FIREWORK_ROCKET_LAUNCH
+
+chat:
+  enabled: true
+  format: "&7[&f%level%&7] &f%player% &8» &f%message%"
+
+navigator:
+  gui-title: "&8Navigator"
+  gui-size: 27
+  servers:
+    - name: "&aSurvival"
+      material: GRASS_BLOCK
+      lore:
+        - "&7Bağlanmak için tıkla"
+      slot: 11
+      server: survival
+    - name: "&cSkyWars"
+      material: FEATHER
+      lore:
+        - "&7Bağlanmak için tıkla"
+      slot: 13
+      server: skywars
+
+join-effects:
+  firework: true
+  title: true
+  title-text: "&6Tekrar hoş geldin, &f%player%&6!"
+  subtitle-text: "&7%coins% coin'in var"
+  title-fade-in: 10
+  title-stay: 40
+  title-fade-out: 10
+
+queue:
+  tick-interval: 3
+  show-position-actionbar: true
+  actionbar-text: "&6Sıra: &f%position% &7/ &f%total% &8| &7Sunucu: &f%server%"
+  servers:
+    - survival
+    - skywars
+    - creative
+    - pvp
+
+void-teleport:
+  enabled: true
+  min-y: 0
+
