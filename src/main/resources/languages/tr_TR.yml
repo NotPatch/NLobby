@@ -1,0 +1,77 @@
+general:
+  no-permission: "&cBunu yapmaya yetkin yok."
+  player-only: "&cBu komut sadece oyuncular tarafından kullanılabilir."
+  plugin-reloaded: "&aNLobby yeniden yüklendi."
+
+join:
+  welcome: "&6Sunucuya hoş geldin, &f%player%&6!"
+  broadcast: "&a%player% &7lobiye katıldı."
+
+quit:
+  broadcast: "&c%player% &7ayrıldı."
+
+spawn:
+  teleported: "&aSpawn'a ışınlandın."
+  set: "&aSpawn noktası konumuna ayarlandı."
+  not-set: "&cSpawn noktası ayarlanmamış."
+
+coins:
+  balance: "&6Bakiyen: &f%coins% coin."
+  given: "&f%player% &ayerine &f%amount% coin &averildi."
+  removed: "&f%player% &cyerine &f%amount% coin &calındı."
+  not-enough: "&cYeterli coin'in yok."
+  usage: "&c/coins <give|take|set|check> <player> [amount]"
+  invalid-amount: "&cGecersiz miktar."
+  amount-positive: "&cMiktar 0'dan büyük olmalıdır."
+  data-load-error: "&cOyuncu verileri yüklenemedi."
+  set-message: "&a%player% adlı oyuncunun coin'leri %amount% olarak ayarlandı."
+
+level:
+  current: "&6Seviyeniz: &f%level%."
+  set: "&f%player% &aseviyesi &f%level% &aolarak ayarlandı."
+  levelup: "&a%level%. seviyeye ulaştın&a!"
+  usage: "&c/level <set|check> [player] [level]"
+  unknown-action: "&cBilinmeyen aksiyon."
+  invalid-level: "&cGecersiz level."
+  level-positive: "&cLevel 1'den küçük olamaz."
+  data-load-error: "&cOyuncu verileri yüklenemedi."
+
+visibility:
+  hidden: "&cOyuncular gizlendi."
+  shown: "&aOyuncular gösterildi."
+
+queue:
+  joined: "&aSıraya girdin: &f%server% &7(%position%. sırada)"
+  left: "&cSıradan çıktın."
+  sending: "&aAktarılıyorsun: &f%server%"
+  already-in-queue: "&cZaten bir sırada görünesin."
+  command:
+    usage: "&c/queue <oyuncu|*> <sunucu>"
+    player-not-found: "&c%player% adlı oyuncu bulunamadı."
+    player-offline: "&c%player% adlı oyuncu çevrimdışı."
+    success: "&a%player% başarıyla %server% kuyruğuna eklendi."
+    invalid-server: "&c%server% geçersiz bir sunucu adı."
+    bulk-success: "&a%count% oyuncu başarıyla %server% kuyruğuna eklendi."
+
+direct:
+  command:
+    usage: "&c/direct <oyuncu|*> <sunucu>"
+    player-not-found: "&c%player% adlı oyuncu bulunamadı."
+    player-offline: "&c%player% adlı oyuncu çevrimdışı."
+    success: "&a%player% anında %server%'a gönderildi."
+    invalid-server: "&c%server% geçersiz bir sunucu adı."
+    bulk-success: "&a%count% oyuncu anında %server%'a gönderildi."
+
+jet:
+  cooldown: "&cJet bekleme suresinde. &7(%seconds%s)"
+
+protection:
+  no-build: "&cBu alanda yapı yapılamaz."
+
+nlobby-command:
+  usage: "&c/nlobby <reload|setspawn|version>"
+  unknown-command: "&cBilinmeyen komut."
+  version: "&6NLobby &f%version% &7by NotPatch"
+
+chat:
+  format: "&7[&f%level%&7] &f%player% &8» &f%message%"

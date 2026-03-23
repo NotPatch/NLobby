@@ -1,0 +1,4 @@
+name: NLobby
+version: '1.0-SNAPSHOT'
+main: com.notpatch.nLobby.NLobby
+api-version: '1.21'

@@ -1,0 +1,77 @@
+general:
+  no-permission: "&cYou don't have permission to do that."
+  player-only: "&cThis command can only be used by players."
+  plugin-reloaded: "&aNLobby has been reloaded."
+
+join:
+  welcome: "&6Welcome to the server, &f%player%&6!"
+  broadcast: "&a%player% &7has joined the lobby."
+
+quit:
+  broadcast: "&c%player% &7has left the lobby."
+
+spawn:
+  teleported: "&aTeleported to spawn."
+  set: "&aSpawn has been set to your location."
+  not-set: "&cSpawn location has not been set yet."
+
+coins:
+  balance: "&6Your balance: &f%coins% coins."
+  given: "&aGiven &f%amount% coins &ato &f%player%&a."
+  removed: "&cRemoved &f%amount% coins &cfrom &f%player%&c."
+  not-enough: "&cYou don't have enough coins."
+  usage: "&c/coins <give|take|set|check> <player> [amount]"
+  invalid-amount: "&cInvalid amount."
+  amount-positive: "&cAmount must be greater than 0."
+  data-load-error: "&cFailed to load player data."
+  set-message: "&a%player%'s coins have been set to %amount%."
+
+level:
+  current: "&6Your level: &f%level%."
+  set: "&aSet &f%player%'s &alevel to &f%level%&a."
+  levelup: "&aYou leveled up to &f%level%&a!"
+  usage: "&c/level <set|check> [player] [level]"
+  unknown-action: "&cUnknown action."
+  invalid-level: "&cInvalid level."
+  level-positive: "&cLevel must be 1 or greater."
+  data-load-error: "&cFailed to load player data."
+
+visibility:
+  hidden: "&cPlayers are now hidden."
+  shown: "&aPlayers are now visible."
+
+queue:
+  joined: "&aJoined queue: &f%server% &7(%position%. position)"
+  left: "&cLeft queue."
+  sending: "&aConnecting to: &f%server%"
+  already-in-queue: "&cYou're already in a queue."
+  command:
+    usage: "&c/queue <player|*> <server>"
+    player-not-found: "&cPlayer &f%player% &cnot found."
+    player-offline: "&cPlayer &f%player% &cis offline."
+    success: "&aSuccessfully added &f%player% &ato the &f%server% &aqueue."
+    invalid-server: "&c%server% is not a valid server name."
+    bulk-success: "&aSuccessfully added &f%count% &aplayers to the &f%server% &aqueue."
+
+direct:
+  command:
+    usage: "&c/direct <player|*> <server>"
+    player-not-found: "&cPlayer &f%player% &cnot found."
+    player-offline: "&cPlayer &f%player% &cis offline."
+    success: "&aSuccessfully sent &f%player% &ato &f%server%&a."
+    invalid-server: "&c%server% is not a valid server name."
+    bulk-success: "&aSuccessfully sent &f%count% &aplayers to &f%server%&a."
+
+jet:
+  cooldown: "&cJet is on cooldown. &7(%seconds%s)"
+
+protection:
+  no-build: "&cYou cannot build in this area."
+
+nlobby-command:
+  usage: "&c/nlobby <reload|setspawn|version>"
+  unknown-command: "&cUnknown command."
+  version: "&6NLobby &f%version% &7by NotPatch"
+
+chat:
+  format: "&7[&f%level%&7] &f%player% &8» &f%message%"
