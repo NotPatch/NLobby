@@ -19,7 +19,8 @@ public class VelocityQueueListener {
     }
 
     /**
-     * Handle player server connection attempts - redirect to queue server if needed
+     * Handle player server connection attempts - queue only for initial login
+     * Lobby→Other servers use Paper queue system (QueueManager)
      */
     @Subscribe
     public void onServerPreConnect(ServerPreConnectEvent event) {
@@ -28,26 +29,35 @@ public class VelocityQueueListener {
         }
 
         Player player = event.getPlayer();
+        String limboServerName = queueManager.getConfig().getQueueServer();
 
-        // In Velocity 3.x, the target server is in the event
-        // We need to check the result or use getOriginalServer()
+        // Get target server
         RegisteredServer targetServer;
         try {
-            // Try to get the server that was resolved
             targetServer = event.getOriginalServer();
             if (targetServer == null) {
                 return;
             }
         } catch (NoSuchMethodError e) {
-            // If the method doesn't exist, we can't process this event
             logger.warning("Unable to get target server from ServerPreConnectEvent");
             return;
         }
 
-        // If this is a connection to the queue server itself, allow it
-        if (targetServer.getServerInfo().getName().equalsIgnoreCase(queueManager.getConfig().getQueueServer())) {
+        // If target is the limbo server itself, always allow
+        if (targetServer.getServerInfo().getName().equalsIgnoreCase(limboServerName)) {
             return;
         }
+
+        // IMPORTANT: Only queue on INITIAL LOGIN (when player has no current server)
+        // If player is coming from another server (e.g., lobby), let Paper queue handle it
+        boolean isInitialLogin = player.getCurrentServer().isEmpty();
+        if (!isInitialLogin) {
+            // Player is switching from another server (e.g., lobby→survival)
+            // Paper queue system will handle this - do NOT intercept
+            return;
+        }
+
+        // ===== INITIAL LOGIN QUEUE LOGIC =====
 
         // Check if we should queue this connection
         boolean shouldCheck = queueManager.getConfig().getTargetServers().isEmpty() ||
@@ -72,15 +82,14 @@ public class VelocityQueueListener {
             return;
         }
 
-        // Player needs to queue - redirect to limbo
+        // Player needs to queue - redirect to limbo (INITIAL LOGIN ONLY)
         int position = queueManager.addToQueue(player.getUniqueId());
         int totalInQueue = queueManager.getQueueSize();
 
         logger.info("Player " + player.getUsername() + " queued for " + targetServer.getServerInfo().getName() +
-                " - Position: " + position + "/" + totalInQueue);
+                " (initial login) - Position: " + position + "/" + totalInQueue);
 
         // Redirect to limbo server
-        String limboServerName = queueManager.getConfig().getQueueServer();
         RegisteredServer limbo = queueManager.getProxyServer()
                 .getServer(limboServerName)
                 .orElse(null);
