@@ -18,7 +18,7 @@ public class VelocityQueueManager {
     private final VelocityQueueConfig config;
 
     private final ConcurrentLinkedQueue<UUID> pendingQueue = new ConcurrentLinkedQueue<>();
-    private final ConcurrentHashMap<UUID, Long> allowedPlayers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Boolean> allowedPlayers = new ConcurrentHashMap<>();
     private ScheduledTask processingTask;
     private RegisteredServer limboServer;
 
@@ -66,25 +66,15 @@ public class VelocityQueueManager {
      * Check if a player is allowed to join
      */
     public boolean isAllowed(UUID uuid) {
-        Long expireTime = allowedPlayers.get(uuid);
-        if (expireTime == null) {
-            return false;
-        }
-
-        if (System.currentTimeMillis() > expireTime) {
-            allowedPlayers.remove(uuid);
-            return false;
-        }
-
-        return true;
+        return allowedPlayers.containsKey(uuid);
     }
 
     /**
-     * Allow a player to join (add to allowed list with TTL)
+     * Allow a player to join (add to allowed list)
+     * No TTL - player stays until they login or disconnect
      */
     public void allow(UUID uuid) {
-        long ttlMs = config.getAllowedTtlMinutes() * 60 * 1000;
-        allowedPlayers.put(uuid, System.currentTimeMillis() + ttlMs);
+        allowedPlayers.put(uuid, true);
     }
 
     /**
@@ -137,13 +127,10 @@ public class VelocityQueueManager {
     }
 
     /**
-     * Process one tick: clean expired allowed entries and move N players from queue to allowed
+     * Process one tick: move N players from queue to allowed
+     * Players stay in allowed list until they login or disconnect
      */
     private void processTick() {
-        // Clean expired entries from allowed list
-        long now = System.currentTimeMillis();
-        allowedPlayers.entrySet().removeIf(entry -> entry.getValue() < now);
-
         // Calculate available slots
         int currentlyAllowed = allowedPlayers.size();
         int availableSlots = config.getMaxSlots() - currentlyAllowed;

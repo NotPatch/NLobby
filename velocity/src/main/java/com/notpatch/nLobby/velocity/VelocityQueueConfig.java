@@ -18,7 +18,6 @@ public class VelocityQueueConfig {
     private int maxSlots;
     private int slotsPerTick;
     private int tickInterval;
-    private int allowedTtlMinutes;
 
     public VelocityQueueConfig(Path configPath) {
         loadConfig(configPath);
@@ -52,7 +51,6 @@ public class VelocityQueueConfig {
                 this.maxSlots = getInt(queueConfig, "max-slots", 5);
                 this.slotsPerTick = getInt(queueConfig, "slots-per-tick", 2);
                 this.tickInterval = getInt(queueConfig, "tick-interval", 5);
-                this.allowedTtlMinutes = getInt(queueConfig, "allowed-ttl-minutes", 10);
             }
         } catch (Exception e) {
             loadDefaults();
@@ -66,7 +64,6 @@ public class VelocityQueueConfig {
         this.maxSlots = 5;
         this.slotsPerTick = 2;
         this.tickInterval = 5;
-        this.allowedTtlMinutes = 10;
     }
 
     private static boolean getBoolean(Map<String, Object> map, String key, boolean defaultValue) {

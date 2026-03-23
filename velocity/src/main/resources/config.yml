@@ -21,10 +21,6 @@ queue:
   # Tick aralığı (saniye)
   tick-interval: 5
 
-  # Queue sırası listesinde kalma süresi (dakika)
-  # Bu süre içinde bağlanmazsa sıradan çıkar ve birbirinden sırada bekleyeni geçer
-  allowed-ttl-minutes: 10
-
 # LIMBO SERVER SETUP SEÇENEKLERI:
 #
 # Seçenek 1: LimboAPI kullanmak (Önerilen)
