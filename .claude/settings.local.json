@@ -4,7 +4,9 @@
       "Bash(mvn clean:*)",
       "Bash(mvn:*)",
       "Bash(git checkout:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"refactor: Switch to limbo-based queue system using ServerPreConnectEvent:*)"
     ]
   }
 }

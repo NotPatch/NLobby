@@ -1,15 +1,21 @@
 # NLobby Velocity Queue Configuration
 queue:
   enabled: true
-  max-slots: 5                  # Aynı anda geçebilecek maksimum oyuncu
-  slots-per-tick: 2             # Her tick'te allowed listesine alınacak oyuncu sayısı
-  tick-interval: 5              # Kaç saniyede bir tick (saniye)
-  allowed-ttl-minutes: 10       # Allowed listesinde kalma süresi (dakika)
-  # Oyuncu queue'da olduğunda gösterilen kick mesajı
-  # %position% - oyuncunun sıra pozisyonu
-  # %total% - toplam sırada beklenenler
-  kick-message: |
-    &c&lSUNUCU DOLU
-    &7Sırada bekliyorsunuz
-    &6Sıranız: &f%position%&6/&f%total%
-    &7Birkaç saniye sonra tekrar bağlanmayı deneyin
+  # Queue kontrol edilecek sunucu adları (boş = tüm sunucular kontrol edilir)
+  # Örnek: ["survival", "skywars"] - sadece bu sunuculara giriş queue kontrol edilir
+  target-servers: []
+
+  # Oyuncular queue sırasında bekleme sunucusu (örn: "queue-lobby", "lobby")
+  queue-server: "lobby"
+
+  # Aynı anda hedef sunucu(lara) geçebilecek maksimum oyuncu
+  max-slots: 5
+
+  # Her tick'te sıradan hedef sunucuya geçirilecek oyuncu sayısı
+  slots-per-tick: 2
+
+  # Tick aralığı (saniye)
+  tick-interval: 5
+
+  # Queue sırası listesinde kalma süresi (dakika) - bu süre içinde bağlanmazsa sıradan çıkar
+  allowed-ttl-minutes: 10

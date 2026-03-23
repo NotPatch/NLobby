@@ -45,7 +45,17 @@ public class NLobbyVelocity {
             // Load configuration
             Path configPath = dataDirectory.resolve("config.yml");
             if (!Files.exists(configPath)) {
-                logger.warning("Config file not found at " + configPath + ". Using defaults.");
+                // Copy default config from resources
+                try (var defaultConfig = getClass().getClassLoader().getResourceAsStream("config.yml")) {
+                    if (defaultConfig != null) {
+                        Files.copy(defaultConfig, configPath);
+                        logger.info("Created default config file at " + configPath);
+                    } else {
+                        logger.warning("Default config.yml not found in resources!");
+                    }
+                } catch (Exception e) {
+                    logger.warning("Failed to copy default config: " + e.getMessage());
+                }
             }
 
             queueConfig = new VelocityQueueConfig(configPath);

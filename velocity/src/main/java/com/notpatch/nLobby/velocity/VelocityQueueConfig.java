@@ -6,16 +6,19 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Getter
 public class VelocityQueueConfig {
     private boolean enabled;
+    private List<String> targetServers;
+    private String queueServer;
     private int maxSlots;
     private int slotsPerTick;
     private int tickInterval;
     private int allowedTtlMinutes;
-    private String kickMessage;
 
     public VelocityQueueConfig(Path configPath) {
         loadConfig(configPath);
@@ -44,12 +47,12 @@ public class VelocityQueueConfig {
                 }
 
                 this.enabled = getBoolean(queueConfig, "enabled", true);
+                this.targetServers = getList(queueConfig, "target-servers", new ArrayList<>());
+                this.queueServer = getString(queueConfig, "queue-server", "lobby");
                 this.maxSlots = getInt(queueConfig, "max-slots", 5);
                 this.slotsPerTick = getInt(queueConfig, "slots-per-tick", 2);
                 this.tickInterval = getInt(queueConfig, "tick-interval", 5);
                 this.allowedTtlMinutes = getInt(queueConfig, "allowed-ttl-minutes", 10);
-                this.kickMessage = getString(queueConfig, "kick-message",
-                        "&cSunucu dolu!\n&6Sıranız: &f%position% / %total%\n&7Birkaç saniye sonra tekrar bağlanın.");
             }
         } catch (Exception e) {
             loadDefaults();
@@ -58,11 +61,12 @@ public class VelocityQueueConfig {
 
     private void loadDefaults() {
         this.enabled = true;
+        this.targetServers = new ArrayList<>();
+        this.queueServer = "lobby";
         this.maxSlots = 5;
         this.slotsPerTick = 2;
         this.tickInterval = 5;
         this.allowedTtlMinutes = 10;
-        this.kickMessage = "&cSunucu dolu!\n&6Sıranız: &f%position% / %total%\n&7Birkaç saniye sonra tekrar bağlanın.";
     }
 
     private static boolean getBoolean(Map<String, Object> map, String key, boolean defaultValue) {
@@ -88,6 +92,19 @@ public class VelocityQueueConfig {
         Object value = map.get(key);
         if (value instanceof String) {
             return (String) value;
+        }
+        return defaultValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> getList(Map<String, Object> map, String key, List<String> defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof List) {
+            try {
+                return (List<String>) value;
+            } catch (ClassCastException e) {
+                return defaultValue;
+            }
         }
         return defaultValue;
     }
