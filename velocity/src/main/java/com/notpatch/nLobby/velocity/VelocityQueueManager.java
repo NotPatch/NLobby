@@ -34,14 +34,19 @@ public class VelocityQueueManager {
             return;
         }
 
-        // Try to find limbo server (can be created with LimboAPI or manual setup)
-        this.limboServer = proxyServer.getServer("nlobby-limbo")
-                .orElse(proxyServer.getServer("limbo").orElse(null));
+        // Find limbo server
+        String limboServerName = config.getQueueServer();
+        this.limboServer = proxyServer.getServer(limboServerName).orElse(null);
 
-        if (this.limboServer == null) {
-            logger.warning("Limbo server not found! Create one with LimboAPI or set up a manual limbo server named 'nlobby-limbo' or 'limbo'");
+        if (this.limboServer != null) {
+            logger.info("Using limbo server: " + this.limboServer.getServerInfo().getName());
         } else {
-            logger.info("Limbo server found: " + this.limboServer.getServerInfo().getName());
+            logger.warning("⚠️  Limbo server '" + limboServerName + "' not found!");
+            logger.warning("Setup options:");
+            logger.warning("1. Install LimboAPI Velocity plugin (https://github.com/Elytrium/LimboAPI/)");
+            logger.warning("   - It will create virtual '" + limboServerName + "' server automatically");
+            logger.warning("2. OR create a manual Paper server named '" + limboServerName + "'");
+            logger.warning("   - Queue system will use it as waiting area");
         }
 
         long tickIntervalMs = config.getTickInterval() * 1000; // Convert seconds to milliseconds

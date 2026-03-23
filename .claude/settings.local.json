@@ -10,7 +10,8 @@
       "Bash(git commit -m \"feat: Add automatic virtual limbo server support:*)",
       "Bash(git commit -m \"fix: Add queue-server config and fix limbo server resolution:*)",
       "Bash(git commit -m \"fix: Queue only on initial login, not on server switches:*)",
-      "Bash(git commit -m \"refactor: Remove TTL, players stay in queue indefinitely:*)"
+      "Bash(git commit -m \"refactor: Remove TTL, players stay in queue indefinitely:*)",
+      "Bash(git commit -m \"feat: Add Elytrium LimboAPI support \\(optional\\):*)"
     ]
   }
 }

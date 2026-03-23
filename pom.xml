@@ -46,6 +46,10 @@
             <url>https://repo.velocitypowered.com/repository/maven-public/</url>
         </repository>
         <repository>
+            <id>elytrium-repo</id>
+            <url>https://maven.elytrium.net/repo/</url>
+        </repository>
+        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
