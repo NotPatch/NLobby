@@ -1,6 +1,7 @@
 package com.notpatch.nLobby.velocity;
 
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 
@@ -19,6 +20,7 @@ public class VelocityQueueManager {
     private final ConcurrentLinkedQueue<UUID> pendingQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentHashMap<UUID, Long> allowedPlayers = new ConcurrentHashMap<>();
     private ScheduledTask processingTask;
+    private RegisteredServer limboServer;
 
     public VelocityQueueManager(ProxyServer proxyServer, Logger logger, VelocityQueueConfig config) {
         this.proxyServer = proxyServer;
@@ -32,11 +34,21 @@ public class VelocityQueueManager {
             return;
         }
 
-        long tickIntervalTicks = config.getTickInterval() * 20; // Convert seconds to ticks
+        // Try to find limbo server (can be created with LimboAPI or manual setup)
+        this.limboServer = proxyServer.getServer("nlobby-limbo")
+                .orElse(proxyServer.getServer("limbo").orElse(null));
+
+        if (this.limboServer == null) {
+            logger.warning("Limbo server not found! Create one with LimboAPI or set up a manual limbo server named 'nlobby-limbo' or 'limbo'");
+        } else {
+            logger.info("Limbo server found: " + this.limboServer.getServerInfo().getName());
+        }
+
+        long tickIntervalMs = config.getTickInterval() * 1000; // Convert seconds to milliseconds
         processingTask = proxyServer.getScheduler()
                 .buildTask(plugin, this::processTick)
-                .delay(tickIntervalTicks, TimeUnit.MILLISECONDS)
-                .repeat(tickIntervalTicks, TimeUnit.MILLISECONDS)
+                .delay(tickIntervalMs, TimeUnit.MILLISECONDS)
+                .repeat(tickIntervalMs, TimeUnit.MILLISECONDS)
                 .schedule();
 
         logger.info("NLobby Velocity Queue started. Max slots: " + config.getMaxSlots() +

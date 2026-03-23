@@ -72,22 +72,19 @@ public class VelocityQueueListener {
             return;
         }
 
-        // Player needs to queue - redirect to queue server
+        // Player needs to queue - redirect to limbo
         int position = queueManager.addToQueue(player.getUniqueId());
         int totalInQueue = queueManager.getQueueSize();
 
         logger.info("Player " + player.getUsername() + " queued for " + targetServer.getServerInfo().getName() +
                 " - Position: " + position + "/" + totalInQueue);
 
-        // Redirect to queue server
-        RegisteredServer queueServer = queueManager.getProxyServer()
-                .getServer(queueManager.getConfig().getQueueServer())
-                .orElse(null);
-
-        if (queueServer != null) {
-            event.setResult(ServerPreConnectEvent.ServerResult.allowed(queueServer));
+        // Redirect to limbo server
+        RegisteredServer limbo = queueManager.getLimboServer();
+        if (limbo != null) {
+            event.setResult(ServerPreConnectEvent.ServerResult.allowed(limbo));
         } else {
-            logger.warning("Queue server '" + queueManager.getConfig().getQueueServer() + "' not found!");
+            logger.warning("Limbo server not available!");
         }
     }
 
