@@ -5,4 +5,11 @@ queue:
   slots-per-tick: 2             # Her tick'te allowed listesine alınacak oyuncu sayısı
   tick-interval: 5              # Kaç saniyede bir tick (saniye)
   allowed-ttl-minutes: 10       # Allowed listesinde kalma süresi (dakika)
-  kick-message: "&cSunucu dolu!\n&6Sıranız: &f%position% / %total%\n&7Birkaç saniye sonra tekrar bağlanın."
+  # Oyuncu queue'da olduğunda gösterilen kick mesajı
+  # %position% - oyuncunun sıra pozisyonu
+  # %total% - toplam sırada beklenenler
+  kick-message: |
+    &c&lSUNUCU DOLU
+    &7Sırada bekliyorsunuz
+    &6Sıranız: &f%position%&6/&f%total%
+    &7Birkaç saniye sonra tekrar bağlanmayı deneyin
