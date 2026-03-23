@@ -34,21 +34,20 @@ public class VelocityQueueManager {
             return;
         }
 
-        // Find limbo server
         String limboServerName = config.getQueueServer();
+
+        // Find virtual limbo server (created by LimboAPI Velocity plugin)
         this.limboServer = proxyServer.getServer(limboServerName).orElse(null);
 
         if (this.limboServer != null) {
-            logger.info("Using limbo server: " + this.limboServer.getServerInfo().getName());
+            logger.info("✅ Limbo server found: " + limboServerName);
         } else {
-            logger.warning("⚠️  Limbo server '" + limboServerName + "' not found!");
-            logger.warning("Setup options:");
-            logger.warning("1. Install LimboAPI Velocity plugin (https://github.com/Elytrium/LimboAPI/)");
-            logger.warning("   - It will create virtual '" + limboServerName + "' server automatically");
-            logger.warning("2. OR create a manual Paper server named '" + limboServerName + "'");
-            logger.warning("   - Queue system will use it as waiting area");
+            logger.severe("❌ Limbo server '" + limboServerName + "' not found!");
+            logger.severe("Make sure LimboAPI Velocity plugin is installed and configured!");
+            logger.severe("Download from: https://github.com/Elytrium/LimboAPI/releases");
         }
 
+        // Start the queue processing scheduler
         long tickIntervalMs = config.getTickInterval() * 1000; // Convert seconds to milliseconds
         processingTask = proxyServer.getScheduler()
                 .buildTask(plugin, this::processTick)

@@ -47,6 +47,13 @@
         </resources>
     </build>
 
+    <repositories>
+        <repository>
+            <id>elytrium-repo</id>
+            <url>https://maven.elytrium.net/repo/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.velocitypowered</groupId>
@@ -65,17 +72,11 @@
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
         </dependency>
-        <!-- LimboAPI is optional - only needed if you want virtual limbo server -->
-        <!-- If using LimboAPI, make sure to:
-             1. Install LimboAPI as a separate Velocity plugin
-             2. Comment out the dependency below
-             3. Rebuild
         <dependency>
-            <groupId>net.elytrium</groupId>
-            <artifactId>limbo-api</artifactId>
-            <version>1.4.2</version>
+            <groupId>net.elytrium.limboapi</groupId>
+            <artifactId>api</artifactId>
+            <version>1.1.26</version>
             <scope>provided</scope>
         </dependency>
-        -->
     </dependencies>
 </project>

@@ -1,10 +1,11 @@
 # NLobby Velocity Queue Configuration
+# Requires: LimboAPI Velocity plugin (https://github.com/Elytrium/LimboAPI/)
+
 queue:
   enabled: true
 
-  # Limbo sunucu adı (oyuncular queue sırasında burada bekler)
-  # LimboAPI'yı kullanıyorsan: "nlobby-limbo"
-  # Manuel Paper server'ı kullanıyorsan: "limbo" (veya kendi adını)
+  # Limbo sunucu adı (virtual server - LimboAPI tarafından otomatik oluşturulur)
+  # Oyuncular queue sırasında bu sanal sunucuda beklenir
   queue-server: "nlobby-limbo"
 
   # Queue kontrol edilecek sunucu adları
@@ -20,16 +21,3 @@ queue:
 
   # Tick aralığı (saniye)
   tick-interval: 5
-
-# LIMBO SERVER SETUP SEÇENEKLERI:
-#
-# Seçenek 1: LimboAPI kullanmak (Önerilen)
-#   - Velocity plugin olarak LimboAPI yükle
-#   - LimboAPI otomatik "nlobby-limbo" adında virtual server oluşturacak
-#
-# Seçenek 2: Manuel Paper server
-#   - Boş bir Paper server aç ("nlobby-limbo" ya da "limbo" adında)
-#   - Velocity config'de bağla
-#   - Oyuncular bu sunucuda bekleyecek
-#
-# Plugin gelecek order: Velocity → nlobby-velocity → (LimboAPI) → Paper servers
