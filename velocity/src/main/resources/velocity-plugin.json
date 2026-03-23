@@ -1,0 +1,9 @@
+{
+  "id": "nlobby-velocity",
+  "name": "NLobby Velocity",
+  "version": "${project.version}",
+  "description": "NLobby proxy-side queue plugin for Velocity",
+  "authors": ["notpatch"],
+  "dependencies": [],
+  "main": "com.notpatch.nLobby.velocity.NLobbyVelocity"
+}

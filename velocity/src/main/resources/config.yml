@@ -1,0 +1,8 @@
+# NLobby Velocity Queue Configuration
+queue:
+  enabled: true
+  max-slots: 5                  # Aynı anda geçebilecek maksimum oyuncu
+  slots-per-tick: 2             # Her tick'te allowed listesine alınacak oyuncu sayısı
+  tick-interval: 5              # Kaç saniyede bir tick (saniye)
+  allowed-ttl-minutes: 10       # Allowed listesinde kalma süresi (dakika)
+  kick-message: "&cSunucu dolu!\n&6Sıranız: &f%position% / %total%\n&7Birkaç saniye sonra tekrar bağlanın."
