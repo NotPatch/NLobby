@@ -132,6 +132,10 @@ public class LevelCommand implements BasicCommand {
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack stack, @NotNull String[] args) {
+        if (args.length == 0) {
+            return Arrays.asList("set", "check");
+        }
+
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return Arrays.asList("set", "check").stream()
@@ -149,11 +153,11 @@ public class LevelCommand implements BasicCommand {
 
     @Override
     public boolean canUse(@NotNull CommandSender sender) {
-        return true;
+        return sender.hasPermission("nlobby.level");
     }
 
     @Override
     public @Nullable String permission() {
-        return null;
+        return "nlobby.level";
     }
 }
