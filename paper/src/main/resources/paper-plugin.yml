@@ -4,3 +4,10 @@ main: com.notpatch.nLobby.NLobby
 api-version: '1.21'
 
 loader: com.notpatch.nLobby.LibraryLoader
+
+dependencies:
+  server:
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+
