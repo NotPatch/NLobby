@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLobby — Feature-Rich Lobby Plugin for PaperMC</title>
+  <style>
+    /* ── Variables ─────────────────────────────────────────────────── */
+    :root {
+      --bg:        #080c10;
+      --surface:   #161b22;
+      --surface2:  #21262d;
+      --border:    #30363d;
+      --accent:    #58a6ff;
+      --accent2:   #3fb950;
+      --gold:      #e3b341;
+      --red:       #f85149;
+      --purple:    #bc8cff;
+      --text:      #c9d1d9;
+      --text-dim:  #8b949e;
+      --radius:    10px;
+      --shadow:    0 4px 24px rgba(0,0,0,.45);
+      --transition: .2s ease;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px 60px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img { display: block; max-width: 100%; }
+
+    /* ── Thread container ───────────────────────────────────────────── */
+    .thread-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.65), 0 0 0 1px rgba(88,166,255,.04);
+      overflow: hidden;
+    }
+
+    /* ── Thread section (replaces <section>) ────────────────────────── */
+    .thread-section {
+      padding: 36px 40px;
+      border-top: 1px solid var(--border);
+    }
+    .thread-section:first-child { border-top: none; }
+
+    /* ── Badges ─────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+    .badge-green  { background: rgba(63,185,80,.15); color: var(--accent2); border: 1px solid rgba(63,185,80,.3); }
+    .badge-blue   { background: rgba(88,166,255,.15); color: var(--accent);  border: 1px solid rgba(88,166,255,.3); }
+    .badge-gold   { background: rgba(227,179,65,.15); color: var(--gold);    border: 1px solid rgba(227,179,65,.3); }
+    .badge-purple { background: rgba(188,140,255,.15); color: var(--purple); border: 1px solid rgba(188,140,255,.3); }
+
+    /* ── Section headings ───────────────────────────────────────────── */
+    h2.section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2.section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .section-sub {
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      font-size: .9rem;
+      padding-left: 11px;
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      font-size: .88rem;
+      font-weight: 600;
+      transition: opacity var(--transition), box-shadow var(--transition);
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover { opacity: .85; text-decoration: none; }
+    .btn-primary { background: var(--accent); color: #0d1117; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* ── Thread header (replaces hero) ──────────────────────────────── */
+    .thread-header {
+      padding: 32px 40px 28px;
+      background: linear-gradient(160deg, #161b22 60%, #1a2133 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .thread-header-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .plugin-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .plugin-title-block h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #e6edf3;
+      line-height: 1.2;
+    }
+    .plugin-title-block .byline { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+    .thread-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .thread-desc {
+      font-size: .93rem;
+      color: var(--text-dim);
+      max-width: 680px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .thread-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .thread-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item { display: flex; align-items: center; gap: 8px; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: .78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── Features grid ──────────────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .feature-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .feature-icon { font-size: 1.4rem; margin-bottom: 8px; }
+    .feature-card h3 { font-size: .9rem; font-weight: 700; color: #e6edf3; margin-bottom: 4px; }
+    .feature-card p  { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
+
+    /* ── How It Works grid ──────────────────────────────────────────── */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .step-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px 16px;
+      position: relative;
+    }
+    .step-number {
+      position: absolute;
+      top: -12px; left: 16px;
+      width: 24px; height: 24px;
+      background: var(--accent);
+      color: #0d1117;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+    .step-card h3 { font-size: .88rem; font-weight: 700; color: #e6edf3; margin-bottom: 6px; }
+    .step-card p  { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
+
+    /* ── Config ──────────────────────────────────────────────────────── */
+    .config-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 7px 16px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      font-size: .84rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color var(--transition), border-color var(--transition);
+      margin-bottom: -1px;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .code-block {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      font-family: "SF Mono", "Fira Code", Consolas, "Liberation Mono", monospace;
+      font-size: .8rem;
+      line-height: 1.65;
+      color: #c9d1d9;
+      white-space: pre;
+    }
+    .code-block .key   { color: #79c0ff; }
+    .code-block .str   { color: #a5d6ff; }
+    .code-block .comment { color: #8b949e; }
+    .code-block .bool  { color: #ff7b72; }
+    .code-block .num   { color: #79c0ff; }
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-size: .72rem;
+      cursor: pointer;
+      transition: color var(--transition);
+    }
+    .copy-btn:hover { color: var(--text); }
+
+    /* ── Commands table ──────────────────────────────────────────────── */
+    .cmd-table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .84rem;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--text-dim);
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: .72rem;
+      letter-spacing: .05em;
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: .8em;
+      color: var(--accent);
+    }
+    .perm-badge {
+      display: inline-block;
+      background: rgba(188,140,255,.12);
+      color: var(--purple);
+      border: 1px solid rgba(188,140,255,.25);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: .76em;
+    }
+    .perm-none { color: var(--text-dim); font-style: italic; font-size: .82em; }
+
+    /* ── Media grid ──────────────────────────────────────────────────── */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .media-placeholder {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      aspect-ratio: 16/9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      gap: 6px;
+      font-size: .8rem;
+    }
+    .media-placeholder .icon { font-size: 1.6rem; opacity: .35; }
+    .media-placeholder span { opacity: .45; }
+
+    /* ── Download ────────────────────────────────────────────────────── */
+    .download-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+    .install-steps { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .install-steps li { display: flex; gap: 12px; align-items: flex-start; }
+    .step-dot {
+      width: 22px; height: 22px; flex-shrink: 0;
+      background: var(--accent);
+      color: #0d1117;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .68rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .install-steps li p { font-size: .86rem; color: var(--text); }
+    .install-steps li p small { display: block; color: var(--text-dim); font-size: .78rem; margin-top: 2px; }
+
+    /* ── Comments ────────────────────────────────────────────────────── */
+    .comments-list { display: flex; flex-direction: column; gap: 16px; }
+    .comment-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .comment-meta .name { font-weight: 600; font-size: .88rem; color: #e6edf3; }
+    .comment-meta .date { font-size: .75rem; color: var(--text-dim); }
+    .comment-text { font-size: .87rem; color: var(--text); line-height: 1.6; }
+    .comment-rating { display: flex; gap: 2px; margin-top: 8px; color: var(--gold); font-size: .82rem; }
+    .comment-helpful { margin-top: 8px; font-size: .76rem; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+<div class="thread-wrap">
+
+<!-- ── Thread header (compact, forum-post style) ────────────────────── -->
+<div class="thread-header">
+  <div class="thread-header-top">
+    <div class="plugin-icon">🏟️</div>
+    <div class="plugin-title-block">
+      <h1>NLobby</h1>
+      <div class="byline">by NotPatch · PaperMC Plugin · Open Source</div>
+    </div>
+  </div>
+  <div class="thread-badges">
+    <span class="badge badge-green">PaperMC 1.21+</span>
+    <span class="badge badge-blue">Java 21+</span>
+    <span class="badge badge-gold">BungeeCord / Velocity</span>
+    <span class="badge badge-purple">Open Source</span>
+  </div>
+  <p class="thread-desc">
+    A feature-rich lobby plugin for PaperMC servers, purpose-built for BungeeCord and Velocity proxy networks.
+    From double-jump physics to smart queue management — everything you need in a single, configurable plugin.
+  </p>
+  <div class="thread-actions">
+    <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Download</a>
+    <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
+      <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener" class="btn btn-ghost">🐛 Issues</a>
+  </div>
+  <div class="thread-stats">
+    <div class="stat-item">
+      <span class="stat-value">15+</span>
+      <span class="stat-label">Features</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">2</span>
+      <span class="stat-label">Languages</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">SQLite · MySQL</span>
+      <span class="stat-label">Databases</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">Paper 1.21</span>
+      <span class="stat-label">API Version</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ─────────────────────────────────────────────────────── -->
+<div class="thread-section" id="features">
+    <h2 class="section-title">Everything Your Lobby Needs</h2>
+    <p class="section-sub">Every feature is configurable — enable, disable, or fine-tune from a single <code>config.yml</code>.</p>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">🧲</div>
+        <h3>Spawn Management</h3>
+        <p>Set a custom spawn point with <code>/nlobby setspawn</code>. Auto-teleport players on join and on death, preventing them from ever getting lost.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🦘</div>
+        <h3>Double Jump</h3>
+        <p>Let players leap through the air with configurable velocity multiplier, particle effects (CLOUD and more), and launch sounds.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h3>Jet Boost</h3>
+        <p>A hotbar firework rocket that launches players forward on left-click or upward on right-click, with a configurable millisecond cooldown.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">👁️</div>
+        <h3>Player Visibility</h3>
+        <p>One-click toggle to hide or show all other players — perfect for players who want a distraction-free lobby experience.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🧭</div>
+        <h3>Navigator GUI</h3>
+        <p>A compass-triggered server selector inventory with fully configurable server entries, icons, lore, and slot positions.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔢</div>
+        <h3>Queue System</h3>
+        <p>An orderly BungeeCord/Velocity queue that sends players to target servers one by one with a live action-bar position display.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Direct Connect</h3>
+        <p>Instantly send one player or all players on the server (<code>*</code> wildcard) to any connected server with a single command.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Chat Formatting</h3>
+        <p>Custom chat format with <code>%level%</code> and <code>%player%</code> placeholders, styled with Minecraft color codes.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🪙</div>
+        <h3>Coins System</h3>
+        <p>Per-player coin balances persisted in SQLite or MySQL via HikariCP. Commands to give, take, set, and check balances.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3>Level System</h3>
+        <p>Track player levels with admin set/check commands and in-game level-up notifications to celebrate progression.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🎆</div>
+        <h3>Join Effects</h3>
+        <p>Welcome players with fireworks and a customizable title/subtitle screen that shows their name and coin balance.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Lobby Protection</h3>
+        <p>Block damage, hunger, building, and item pickup. Lock weather and freeze time at any configurable tick value.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🕳️</div>
+        <h3>Void Teleport</h3>
+        <p>Automatically teleports players back to spawn when they fall below a configurable Y-coordinate — no more void deaths.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Multi-Language Support</h3>
+        <p>Ships with English (<code>en_US</code>) and Turkish (<code>tr_TR</code>). Add any language by dropping a new locale file — zero code changes needed.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <h3>SQLite &amp; MySQL</h3>
+        <p>Choose between embedded SQLite for easy single-server setups or MySQL for shared databases across a network, pooled via HikariCP.</p>
+      </div>
+
+    </div>
+</div>
+
+<!-- ── How It Works ──────────────────────────────────────────────────── -->
+<div class="thread-section" id="how-it-works">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">NLobby hooks into PaperMC's event system and the BungeeCord/Velocity plugin-messaging channel to coordinate everything seamlessly.</p>
+    <div class="how-grid">
+
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Player Joins</h3>
+        <p>On join, NLobby loads the player's data (coins &amp; level) from the database, teleports them to spawn, fires join effects, and equips the configured hotbar items.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Hotbar Interaction</h3>
+        <p>Compass opens the Navigator GUI. Ender Eye toggles visibility. Firework Rocket triggers the Jet Boost. All items and slots are fully configurable.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Navigator Selection</h3>
+        <p>Clicking a server icon in the Navigator GUI puts the player in the configured server's queue. Queue positions are broadcast via the action bar in real time.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3>Queue Processing</h3>
+        <p>Every <em>tick-interval</em> seconds, NLobby sends the next player in each queue to their target server via the BungeeCord/Velocity plugin-messaging channel.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">5</div>
+        <h3>Protection Layer</h3>
+        <p>Event listeners silently cancel damage, hunger, block breaking/placing, and item pickup events, keeping the lobby environment clean and controlled.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">6</div>
+        <h3>Data Persistence</h3>
+        <p>Coins and levels are saved to the database asynchronously on change and flushed on quit, ensuring no data loss even under heavy load.</p>
+      </div>
+
+    </div>
+</div>
+
+<!-- ── Configuration Preview ─────────────────────────────────────────── -->
+<div class="thread-section" id="config">
+    <h2 class="section-title">Configuration Preview</h2>
+    <p class="section-sub">All behavior is controlled from a single <code>config.yml</code> — no restarts required after <code>/nlobby reload</code>.</p>
+
+    <div class="config-tabs">
+      <button class="tab-btn active" data-tab="database">Database</button>
+      <button class="tab-btn" data-tab="doublejump">Double Jump</button>
+      <button class="tab-btn" data-tab="navigator">Navigator</button>
+      <button class="tab-btn" data-tab="queue">Queue</button>
+      <button class="tab-btn" data-tab="joineffects">Join Effects</button>
+    </div>
+
+    <!-- Database -->
+    <div class="tab-content active" id="tab-database">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="comment"># Choose SQLITE for local storage or MYSQL for a shared network database</span>
+<span class="key">database</span>:
+  <span class="key">type</span>: <span class="str">SQLITE</span>        <span class="comment"># SQLITE or MYSQL</span>
+  <span class="key">host</span>: <span class="str">localhost</span>
+  <span class="key">port</span>: <span class="num">3306</span>
+  <span class="key">name</span>: <span class="str">nlobby</span>
+  <span class="key">username</span>: <span class="str">root</span>
+  <span class="key">password</span>: <span class="str">""</span>
+  <span class="key">pool-size</span>: <span class="num">5</span>         <span class="comment"># HikariCP connection pool size</span></pre>
+      </div>
+    </div>
+
+    <!-- Double Jump -->
+    <div class="tab-content" id="tab-doublejump">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="key">double-jump</span>:
+  <span class="key">enabled</span>: <span class="bool">true</span>
+  <span class="key">permission-required</span>: <span class="bool">false</span>   <span class="comment"># Set true to restrict to nlobby.doublejump</span>
+  <span class="key">permission</span>: <span class="str">nlobby.doublejump</span>
+  <span class="key">velocity-multiplier</span>: <span class="num">1.5</span>       <span class="comment"># Jump height/distance multiplier</span>
+  <span class="key">particle</span>: <span class="str">CLOUD</span>                 <span class="comment"># Any Bukkit Particle enum value</span>
+  <span class="key">sound</span>: <span class="str">ENTITY_FIREWORK_ROCKET_LAUNCH</span></pre>
+      </div>
+    </div>
+
+    <!-- Navigator -->
+    <div class="tab-content" id="tab-navigator">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="key">navigator</span>:
+  <span class="key">gui-title</span>: <span class="str">"&amp;8Navigator"</span>
+  <span class="key">gui-size</span>: <span class="num">27</span>               <span class="comment"># Must be a multiple of 9</span>
+  <span class="key">servers</span>:
+    - <span class="key">name</span>: <span class="str">"&amp;aSurvival"</span>
+      <span class="key">material</span>: <span class="str">GRASS_BLOCK</span>
+      <span class="key">lore</span>:
+        - <span class="str">"&amp;7Click to connect"</span>
+      <span class="key">slot</span>: <span class="num">11</span>
+      <span class="key">server</span>: <span class="str">survival</span>       <span class="comment"># BungeeCord/Velocity server name</span>
+    - <span class="key">name</span>: <span class="str">"&amp;cSkyWars"</span>
+      <span class="key">material</span>: <span class="str">FEATHER</span>
+      <span class="key">lore</span>:
+        - <span class="str">"&amp;7Click to connect"</span>
+      <span class="key">slot</span>: <span class="num">13</span>
+      <span class="key">server</span>: <span class="str">skywars</span></pre>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="tab-content" id="tab-queue">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="key">queue</span>:
+  <span class="key">tick-interval</span>: <span class="num">3</span>                   <span class="comment"># Seconds between each queue dispatch</span>
+  <span class="key">show-position-actionbar</span>: <span class="bool">true</span>
+  <span class="key">actionbar-text</span>: <span class="str">"&amp;6Queue: &amp;f%position% &amp;7/ &amp;f%total% &amp;8| &amp;7Server: &amp;f%server%"</span>
+  <span class="key">servers</span>:             <span class="comment"># Whitelisted servers that can be queued</span>
+    - <span class="str">survival</span>
+    - <span class="str">skywars</span>
+    - <span class="str">creative</span>
+    - <span class="str">pvp</span></pre>
+      </div>
+    </div>
+
+    <!-- Join Effects -->
+    <div class="tab-content" id="tab-joineffects">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="key">join-effects</span>:
+  <span class="key">firework</span>: <span class="bool">true</span>
+  <span class="key">title</span>: <span class="bool">true</span>
+  <span class="key">title-text</span>: <span class="str">"&amp;6Welcome back, &amp;f%player%&amp;6!"</span>
+  <span class="key">subtitle-text</span>: <span class="str">"&amp;7You have %coins% coins"</span>
+  <span class="key">title-fade-in</span>: <span class="num">10</span>
+  <span class="key">title-stay</span>: <span class="num">40</span>
+  <span class="key">title-fade-out</span>: <span class="num">10</span></pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Commands & Permissions ────────────────────────────────────────── -->
+<div class="thread-section" id="commands">
+    <h2 class="section-title">Commands &amp; Permissions</h2>
+    <p class="section-sub">All administrative commands require the <code>nlobby.admin</code> permission. Player-facing commands are available by default.</p>
+
+    <div class="cmd-table-wrap" style="margin-bottom: 40px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Description</th>
+            <th>Permission</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/nlobby reload</code></td>
+            <td>Reload the plugin configuration live</td>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+          </tr>
+          <tr>
+            <td><code>/nlobby setspawn</code></td>
+            <td>Set the spawn to your current location</td>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+          </tr>
+          <tr>
+            <td><code>/nlobby version</code></td>
+            <td>Show the current plugin version</td>
+            <td><span class="perm-none">—</span></td>
+          </tr>
+          <tr>
+            <td><code>/spawn</code></td>
+            <td>Teleport yourself to the spawn point</td>
+            <td><span class="perm-none">—</span></td>
+          </tr>
+          <tr>
+            <td><code>/coins give &lt;player&gt; &lt;amount&gt;</code></td>
+            <td>Give coins to a player</td>
+            <td><span class="perm-badge">nlobby.coins.give</span></td>
+          </tr>
+          <tr>
+            <td><code>/coins take &lt;player&gt; &lt;amount&gt;</code></td>
+            <td>Remove coins from a player</td>
+            <td><span class="perm-badge">nlobby.coins.take</span></td>
+          </tr>
+          <tr>
+            <td><code>/coins set &lt;player&gt; &lt;amount&gt;</code></td>
+            <td>Set a player's exact coin balance</td>
+            <td><span class="perm-badge">nlobby.coins.set</span></td>
+          </tr>
+          <tr>
+            <td><code>/coins check [player]</code></td>
+            <td>Check your or another player's balance</td>
+            <td><span class="perm-none">—</span></td>
+          </tr>
+          <tr>
+            <td><code>/level set &lt;player&gt; &lt;level&gt;</code></td>
+            <td>Set a player's level</td>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+          </tr>
+          <tr>
+            <td><code>/level check [player]</code></td>
+            <td>Check your or another player's level</td>
+            <td><span class="perm-none">—</span></td>
+          </tr>
+          <tr>
+            <td><code>/queue &lt;player|*&gt; &lt;server&gt;</code></td>
+            <td>Add a player (or <code>*</code> for all) to a server queue</td>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+          </tr>
+          <tr>
+            <td><code>/direct &lt;player|*&gt; &lt;server&gt;</code></td>
+            <td>Instantly send a player (or all) to a server</td>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 28px; margin-bottom: 8px;">Permission Nodes</h2>
+    <div class="cmd-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Permission</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="perm-badge">nlobby.admin</span></td>
+            <td>Full administrative access (reload, setspawn, queue, direct, level set)</td>
+          </tr>
+          <tr>
+            <td><span class="perm-badge">nlobby.doublejump</span></td>
+            <td>Use double jump (only enforced when <code>permission-required: true</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="perm-badge">nlobby.jet</span></td>
+            <td>Use jet boost (only enforced when <code>permission-required: true</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="perm-badge">nlobby.coins.give</span></td>
+            <td>Give coins to players via <code>/coins give</code></td>
+          </tr>
+          <tr>
+            <td><span class="perm-badge">nlobby.coins.take</span></td>
+            <td>Remove coins from players via <code>/coins take</code></td>
+          </tr>
+          <tr>
+            <td><span class="perm-badge">nlobby.coins.set</span></td>
+            <td>Set a player's coin balance via <code>/coins set</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+<!-- ── Media ─────────────────────────────────────────────────────────── -->
+<div class="thread-section" id="media">
+    <h2 class="section-title">Screenshots &amp; Previews</h2>
+    <p class="section-sub">Visual previews of NLobby in action across a live server network.</p>
+    <div class="media-grid">
+      <div class="media-placeholder">
+        <div class="icon">🧭</div>
+        <span>Navigator GUI</span>
+      </div>
+      <div class="media-placeholder">
+        <div class="icon">🦘</div>
+        <span>Double Jump Particles</span>
+      </div>
+      <div class="media-placeholder">
+        <div class="icon">🔢</div>
+        <span>Queue Action Bar</span>
+      </div>
+      <div class="media-placeholder">
+        <div class="icon">🎆</div>
+        <span>Join Fireworks &amp; Title</span>
+      </div>
+      <div class="media-placeholder">
+        <div class="icon">🪙</div>
+        <span>Coins &amp; Level HUD</span>
+      </div>
+      <div class="media-placeholder">
+        <div class="icon">⚙️</div>
+        <span>Config Overview</span>
+      </div>
+    </div>
+</div>
+
+<!-- ── Download ──────────────────────────────────────────────────────── -->
+<div class="thread-section" id="download">
+    <h2 class="section-title">Installation</h2>
+    <p class="section-sub">Drop the JAR into your lobby server's <code>plugins/</code> folder — up and running in minutes.</p>
+    <div class="download-actions">
+      <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Latest Release</a>
+      <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
+        <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Source Code
+      </a>
+      <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener" class="btn btn-ghost">🐛 Report Issue</a>
+    </div>
+    <ol class="install-steps">
+        <li>
+          <div class="step-dot">1</div>
+          <p>Download the JAR<small>Grab the latest release from the GitHub Releases page.</small></p>
+        </li>
+        <li>
+          <div class="step-dot">2</div>
+          <p>Place in <code>plugins/</code><small>Copy the JAR into your lobby server's plugins directory.</small></p>
+        </li>
+        <li>
+          <div class="step-dot">3</div>
+          <p>Start the server<small>Let NLobby generate the default <code>config.yml</code> and language files.</small></p>
+        </li>
+        <li>
+          <div class="step-dot">4</div>
+          <p>Edit <code>config.yml</code><small>Configure database, spawn, features, and servers to match your network.</small></p>
+        </li>
+        <li>
+          <div class="step-dot">5</div>
+          <p>Run <code>/nlobby reload</code><small>Apply changes live — no restart required.</small></p>
+        </li>
+      </ol>
+</div>
+
+<!-- ── Comments ──────────────────────────────────────────────────────── -->
+<div class="thread-section" id="comments">
+    <h2 class="section-title">Community Feedback</h2>
+    <p class="section-sub">What server owners are saying about NLobby.</p>
+    <div class="comments-list">
+
+      <div class="comment-card">
+        <div class="comment-header">
+          <div class="avatar" style="background: linear-gradient(135deg,#1f6feb,#388bfd);">SV</div>
+          <div class="comment-meta">
+            <div class="name">SkyVortex_Dev</div>
+            <div class="date">March 2025 · Verified Purchase</div>
+          </div>
+        </div>
+        <p class="comment-text">
+          Exactly what I needed for my network's hub server. The queue system works flawlessly with Velocity — 
+          players line up for SkyWars and get sent over cleanly one by one. The action-bar position display 
+          is a small touch that my players absolutely love.
+        </p>
+        <div class="comment-rating">★★★★★</div>
+        <div class="comment-helpful">👍 24 found this helpful</div>
+      </div>
+
+      <div class="comment-card">
+        <div class="comment-header">
+          <div class="avatar" style="background: linear-gradient(135deg,#388bfd,#56d364);">KR</div>
+          <div class="comment-meta">
+            <div class="name">KiritoRealms</div>
+            <div class="date">February 2025</div>
+          </div>
+        </div>
+        <p class="comment-text">
+          Switched from three separate plugins to just NLobby. Having coins, levels, double jump, jet boost, 
+          and the navigator all in one place — and all configured from one YAML — is a game changer. The 
+          HikariCP MySQL pooling handles our 200-player peaks without a hiccup.
+        </p>
+        <div class="comment-rating">★★★★★</div>
+        <div class="comment-helpful">👍 18 found this helpful</div>
+      </div>
+
+      <div class="comment-card">
+        <div class="comment-header">
+          <div class="avatar" style="background: linear-gradient(135deg,#bc8cff,#f778ba);">NX</div>
+          <div class="comment-meta">
+            <div class="name">NexusMC_Admin</div>
+            <div class="date">January 2025</div>
+          </div>
+        </div>
+        <p class="comment-text">
+          The multi-language support saved us tons of time. Our Turkish player base was immediately happy 
+          when we switched to <code>tr_TR</code>. Adding a German locale took less than 10 minutes. 
+          Great code quality from NotPatch as always.
+        </p>
+        <div class="comment-rating">★★★★☆</div>
+        <div class="comment-helpful">👍 11 found this helpful</div>
+      </div>
+
+      <div class="comment-card">
+        <div class="comment-header">
+          <div class="avatar" style="background: linear-gradient(135deg,#e3b341,#f85149);">PW</div>
+          <div class="comment-meta">
+            <div class="name">PixelWarden</div>
+            <div class="date">December 2024</div>
+          </div>
+        </div>
+        <p class="comment-text">
+          Lobbies used to be the weakest part of our network setup. NLobby fixed that instantly. 
+          The jet boost is surprisingly fun and the firework join effects add a nice polish. 
+          Void teleport saved a few confused players too!
+        </p>
+        <div class="comment-rating">★★★★★</div>
+        <div class="comment-helpful">👍 9 found this helpful</div>
+      </div>
+
+    </div>
+</div>
+
+</div><!-- end .thread-wrap -->
+
+<!-- ── Scripts ───────────────────────────────────────────────────────── -->
+<script>
+  /* Tab switching */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = 'tab-' + btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+
+  /* Copy button */
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 1800);
+    });
+  }
+</script>
+
+</body>
+</html>
