@@ -40,7 +40,7 @@ public class ServerCommand implements BasicCommand {
 
         String serverName = args[0].toLowerCase();
 
-        if (player.isOp()) {
+        if (player.hasPermission("nlobby.queue.bypass")) {
             queueManager.connectPlayerDirect(player, serverName);
         } else {
             queueManager.joinQueue(player, serverName);
@@ -49,6 +49,10 @@ public class ServerCommand implements BasicCommand {
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack stack, @NotNull String[] args) {
+        if (args.length == 0) {
+            return configManager.getServers();
+        }
+
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return configManager.getServers().stream()
