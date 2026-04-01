@@ -7,7 +7,7 @@
   <style>
     /* ── Variables ─────────────────────────────────────────────────── */
     :root {
-      --bg:        #0d1117;
+      --bg:        #080c10;
       --surface:   #161b22;
       --surface2:  #21262d;
       --border:    #30363d;
@@ -18,31 +18,48 @@
       --purple:    #bc8cff;
       --text:      #c9d1d9;
       --text-dim:  #8b949e;
-      --radius:    12px;
+      --radius:    10px;
       --shadow:    0 4px 24px rgba(0,0,0,.45);
       --transition: .2s ease;
     }
 
     /* ── Reset ──────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
+      padding: 40px 20px 60px;
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     img { display: block; max-width: 100%; }
 
-    /* ── Utilities ──────────────────────────────────────────────────── */
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    /* ── Thread container ───────────────────────────────────────────── */
+    .thread-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.65), 0 0 0 1px rgba(88,166,255,.04);
+      overflow: hidden;
+    }
+
+    /* ── Thread section (replaces <section>) ────────────────────────── */
+    .thread-section {
+      padding: 36px 40px;
+      border-top: 1px solid var(--border);
+    }
+    .thread-section:first-child { border-top: none; }
+
+    /* ── Badges ─────────────────────────────────────────────────────── */
     .badge {
       display: inline-block;
       padding: 2px 10px;
       border-radius: 20px;
-      font-size: .75rem;
+      font-size: .72rem;
       font-weight: 600;
       letter-spacing: .04em;
     }
@@ -51,242 +68,153 @@
     .badge-gold   { background: rgba(227,179,65,.15); color: var(--gold);    border: 1px solid rgba(227,179,65,.3); }
     .badge-purple { background: rgba(188,140,255,.15); color: var(--purple); border: 1px solid rgba(188,140,255,.3); }
 
-    section { padding: 80px 0; }
-    section:nth-child(even) { background: var(--surface); }
-
+    /* ── Section headings ───────────────────────────────────────────── */
     h2.section-title {
-      font-size: 1.85rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      margin-bottom: 10px;
       color: #e6edf3;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2.section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
     }
     .section-sub {
       color: var(--text-dim);
-      margin-bottom: 48px;
-      font-size: 1.05rem;
-    }
-
-    /* ── Navbar ─────────────────────────────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(13,17,23,.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-    }
-    .nav-brand {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #e6edf3;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .nav-brand .logo-icon { font-size: 1.4rem; }
-    .nav-links { display: flex; gap: 28px; }
-    .nav-links a {
-      color: var(--text-dim);
+      margin-bottom: 24px;
       font-size: .9rem;
-      transition: color var(--transition);
+      padding-left: 11px;
     }
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
-    .nav-cta {
-      background: var(--accent);
-      color: #0d1117 !important;
-      font-weight: 600;
-      padding: 6px 16px;
-      border-radius: 6px;
-      transition: opacity var(--transition);
-    }
-    .nav-cta:hover { opacity: .85; text-decoration: none !important; }
 
-    /* ── Hero ────────────────────────────────────────────────────────── */
-    #hero {
-      padding: 100px 0 80px;
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    #hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 40% at 50% -10%, rgba(88,166,255,.12) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 80% 110%, rgba(63,185,80,.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .hero-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-    .hero-title {
-      font-size: clamp(2.4rem, 5vw, 3.5rem);
-      font-weight: 800;
-      line-height: 1.15;
-      color: #e6edf3;
-      margin-bottom: 20px;
-    }
-    .hero-title span { color: var(--accent); }
-    .hero-desc {
-      color: var(--text-dim);
-      font-size: 1.1rem;
-      margin-bottom: 36px;
-      max-width: 520px;
-    }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    /* ── Buttons ────────────────────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 11px 22px;
+      gap: 7px;
+      padding: 8px 18px;
       border-radius: var(--radius);
-      font-size: .95rem;
+      font-size: .88rem;
       font-weight: 600;
-      transition: transform var(--transition), opacity var(--transition), box-shadow var(--transition);
+      transition: opacity var(--transition), box-shadow var(--transition);
       cursor: pointer;
       border: none;
     }
-    .btn:hover { transform: translateY(-2px); text-decoration: none; box-shadow: var(--shadow); }
+    .btn:hover { opacity: .85; text-decoration: none; }
     .btn-primary { background: var(--accent); color: #0d1117; }
     .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
 
-    .hero-stats {
-      display: flex;
-      gap: 32px;
-      margin-top: 40px;
-    }
-    .stat-item { text-align: left; }
-    .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
-    .stat-label { font-size: .8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
-
-    /* Banner card */
-    .hero-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow);
-    }
-    .hero-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
+    /* ── Thread header (replaces hero) ──────────────────────────────── */
+    .thread-header {
+      padding: 32px 40px 28px;
+      background: linear-gradient(160deg, #161b22 60%, #1a2133 100%);
       border-bottom: 1px solid var(--border);
     }
+    .thread-header-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
     .plugin-icon {
-      width: 52px; height: 52px;
+      width: 48px; height: 48px;
       background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-    }
-    .plugin-meta h3 { font-size: 1.2rem; color: #e6edf3; font-weight: 700; }
-    .plugin-meta p  { font-size: .8rem; color: var(--text-dim); }
-    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .feature-list li {
-      display: flex; align-items: center; gap: 10px;
-      font-size: .9rem; color: var(--text);
-    }
-    .feature-list li::before {
-      content: '✓';
-      color: var(--accent2);
-      font-weight: 700;
+      font-size: 1.5rem;
       flex-shrink: 0;
     }
-    .compatibility {
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    .plugin-title-block h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #e6edf3;
+      line-height: 1.2;
     }
-    .compat-label { font-size: .78rem; color: var(--text-dim); margin-right: 4px; }
+    .plugin-title-block .byline { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+    .thread-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .thread-desc {
+      font-size: .93rem;
+      color: var(--text-dim);
+      max-width: 680px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .thread-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .thread-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item { display: flex; align-items: center; gap: 8px; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: .78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
 
-    /* ── Features ────────────────────────────────────────────────────── */
+    /* ── Features grid ──────────────────────────────────────────────── */
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
     }
     .feature-card {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      padding: 16px;
     }
-    .feature-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(88,166,255,.1);
-    }
-    .feature-icon {
-      font-size: 1.8rem;
-      margin-bottom: 12px;
-    }
-    .feature-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #e6edf3;
-      margin-bottom: 6px;
-    }
-    .feature-card p { font-size: .88rem; color: var(--text-dim); line-height: 1.55; }
+    .feature-icon { font-size: 1.4rem; margin-bottom: 8px; }
+    .feature-card h3 { font-size: .9rem; font-weight: 700; color: #e6edf3; margin-bottom: 4px; }
+    .feature-card p  { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
 
-    /* ── How It Works ─────────────────────────────────────────────────── */
+    /* ── How It Works grid ──────────────────────────────────────────── */
     .how-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
     }
     .step-card {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 28px 24px;
+      padding: 20px 16px 16px;
       position: relative;
     }
     .step-number {
       position: absolute;
-      top: -14px;
-      left: 20px;
-      width: 28px; height: 28px;
+      top: -12px; left: 16px;
+      width: 24px; height: 24px;
       background: var(--accent);
       color: #0d1117;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: .8rem;
+      font-size: .72rem;
       font-weight: 700;
     }
-    .step-card h3 { font-size: .95rem; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
-    .step-card p  { font-size: .85rem; color: var(--text-dim); line-height: 1.55; }
+    .step-card h3 { font-size: .88rem; font-weight: 700; color: #e6edf3; margin-bottom: 6px; }
+    .step-card p  { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
 
     /* ── Config ──────────────────────────────────────────────────────── */
     .config-tabs {
       display: flex;
       gap: 4px;
-      margin-bottom: 0;
       border-bottom: 1px solid var(--border);
     }
     .tab-btn {
-      padding: 8px 18px;
+      padding: 7px 16px;
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
       color: var(--text-dim);
-      font-size: .88rem;
+      font-size: .84rem;
       font-weight: 500;
       cursor: pointer;
       transition: color var(--transition), border-color var(--transition);
@@ -301,58 +229,56 @@
       border: 1px solid var(--border);
       border-top: none;
       border-radius: 0 0 var(--radius) var(--radius);
-      padding: 24px;
+      padding: 20px;
       overflow-x: auto;
       position: relative;
     }
     .code-block pre {
       font-family: "SF Mono", "Fira Code", Consolas, "Liberation Mono", monospace;
-      font-size: .82rem;
-      line-height: 1.7;
+      font-size: .8rem;
+      line-height: 1.65;
       color: #c9d1d9;
       white-space: pre;
     }
-    /* YAML syntax highlight */
     .code-block .key   { color: #79c0ff; }
-    .code-block .val   { color: #a5d6ff; }
     .code-block .str   { color: #a5d6ff; }
     .code-block .comment { color: #8b949e; }
     .code-block .bool  { color: #ff7b72; }
     .code-block .num   { color: #79c0ff; }
     .copy-btn {
       position: absolute;
-      top: 12px; right: 12px;
+      top: 10px; right: 10px;
       background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--text-dim);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: .75rem;
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-size: .72rem;
       cursor: pointer;
       transition: color var(--transition);
     }
     .copy-btn:hover { color: var(--text); }
 
-    /* ── Commands ────────────────────────────────────────────────────── */
+    /* ── Commands table ──────────────────────────────────────────────── */
     .cmd-table-wrap { overflow-x: auto; }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: .88rem;
+      font-size: .84rem;
     }
     thead th {
       background: var(--surface2);
       color: var(--text-dim);
       font-weight: 600;
-      padding: 12px 16px;
+      padding: 10px 14px;
       text-align: left;
       border-bottom: 1px solid var(--border);
       text-transform: uppercase;
-      font-size: .75rem;
+      font-size: .72rem;
       letter-spacing: .05em;
     }
     tbody td {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
     }
@@ -362,9 +288,9 @@
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 1px 7px;
+      padding: 1px 6px;
       font-family: "SF Mono", "Fira Code", Consolas, monospace;
-      font-size: .82em;
+      font-size: .8em;
       color: var(--accent);
     }
     .perm-badge {
@@ -373,17 +299,17 @@
       color: var(--purple);
       border: 1px solid rgba(188,140,255,.25);
       border-radius: 4px;
-      padding: 1px 8px;
+      padding: 1px 7px;
       font-family: "SF Mono", "Fira Code", Consolas, monospace;
-      font-size: .78em;
+      font-size: .76em;
     }
-    .perm-none { color: var(--text-dim); font-style: italic; font-size: .85em; }
+    .perm-none { color: var(--text-dim); font-style: italic; font-size: .82em; }
 
-    /* ── Media ───────────────────────────────────────────────────────── */
+    /* ── Media grid ──────────────────────────────────────────────────── */
     .media-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      gap: 12px;
     }
     .media-placeholder {
       background: var(--surface2);
@@ -395,202 +321,105 @@
       align-items: center;
       justify-content: center;
       color: var(--text-dim);
-      gap: 8px;
-      font-size: .85rem;
-      transition: border-color var(--transition);
+      gap: 6px;
+      font-size: .8rem;
     }
-    .media-placeholder:hover { border-color: var(--accent); }
-    .media-placeholder .icon { font-size: 2rem; opacity: .4; }
-    .media-placeholder span { opacity: .5; }
+    .media-placeholder .icon { font-size: 1.6rem; opacity: .35; }
+    .media-placeholder span { opacity: .45; }
 
     /* ── Download ────────────────────────────────────────────────────── */
-    #download {
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-    }
-    .download-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
-    }
-    .download-copy h2 { font-size: 2rem; font-weight: 700; color: #e6edf3; margin-bottom: 12px; }
-    .download-copy p  { color: var(--text-dim); margin-bottom: 24px; }
-    .download-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-    .install-steps { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-    .install-steps li {
-      display: flex; gap: 14px; align-items: flex-start;
-    }
+    .download-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+    .install-steps { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .install-steps li { display: flex; gap: 12px; align-items: flex-start; }
     .step-dot {
-      width: 24px; height: 24px; flex-shrink: 0;
+      width: 22px; height: 22px; flex-shrink: 0;
       background: var(--accent);
       color: #0d1117;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: .7rem;
+      font-size: .68rem;
       font-weight: 700;
       margin-top: 2px;
     }
-    .install-steps li p { font-size: .88rem; color: var(--text); }
-    .install-steps li p small { display: block; color: var(--text-dim); font-size: .8rem; margin-top: 2px; }
+    .install-steps li p { font-size: .86rem; color: var(--text); }
+    .install-steps li p small { display: block; color: var(--text-dim); font-size: .78rem; margin-top: 2px; }
 
     /* ── Comments ────────────────────────────────────────────────────── */
-    .comments-list { display: flex; flex-direction: column; gap: 20px; max-width: 760px; }
+    .comments-list { display: flex; flex-direction: column; gap: 16px; }
     .comment-card {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px 24px;
+      padding: 16px 20px;
     }
-    .comment-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
+    .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .avatar {
-      width: 36px; height: 36px;
+      width: 32px; height: 32px;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: .85rem;
+      font-size: .78rem;
       font-weight: 700;
       flex-shrink: 0;
     }
-    .comment-meta .name { font-weight: 600; font-size: .9rem; color: #e6edf3; }
-    .comment-meta .date { font-size: .78rem; color: var(--text-dim); }
-    .comment-text { font-size: .9rem; color: var(--text); line-height: 1.6; }
-    .comment-rating { display: flex; gap: 2px; margin-top: 10px; color: var(--gold); font-size: .85rem; }
-    .comment-helpful { margin-top: 10px; font-size: .8rem; color: var(--text-dim); }
-
-    /* ── Footer ──────────────────────────────────────────────────────── */
-    footer {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 40px 0;
-    }
-    .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .footer-brand { font-size: 1rem; font-weight: 700; color: #e6edf3; }
-    .footer-links { display: flex; gap: 20px; }
-    .footer-links a { font-size: .85rem; color: var(--text-dim); }
-    .footer-links a:hover { color: var(--text); text-decoration: none; }
-    .footer-copy { font-size: .8rem; color: var(--text-dim); }
-
-    /* ── Responsive ──────────────────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-card  { display: none; }
-      .download-inner { grid-template-columns: 1fr; }
-      .media-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 600px) {
-      .nav-links { display: none; }
-      .hero-title { font-size: 2rem; }
-      .features-grid, .how-grid { grid-template-columns: 1fr; }
-      .media-grid { grid-template-columns: 1fr; }
-    }
+    .comment-meta .name { font-weight: 600; font-size: .88rem; color: #e6edf3; }
+    .comment-meta .date { font-size: .75rem; color: var(--text-dim); }
+    .comment-text { font-size: .87rem; color: var(--text); line-height: 1.6; }
+    .comment-rating { display: flex; gap: 2px; margin-top: 8px; color: var(--gold); font-size: .82rem; }
+    .comment-helpful { margin-top: 8px; font-size: .76rem; color: var(--text-dim); }
   </style>
 </head>
 <body>
+<div class="thread-wrap">
 
-<!-- ── Navbar ───────────────────────────────────────────────────────── -->
-<nav>
-  <div class="container nav-inner">
-    <div class="nav-brand">
-      <span class="logo-icon">🏟️</span>
-      NLobby
-    </div>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#how-it-works">How It Works</a>
-      <a href="#config">Config</a>
-      <a href="#commands">Commands</a>
-      <a href="#download">Download</a>
-      <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="nav-cta">GitHub →</a>
+<!-- ── Thread header (compact, forum-post style) ────────────────────── -->
+<div class="thread-header">
+  <div class="thread-header-top">
+    <div class="plugin-icon">🏟️</div>
+    <div class="plugin-title-block">
+      <h1>NLobby</h1>
+      <div class="byline">by NotPatch · PaperMC Plugin · Open Source</div>
     </div>
   </div>
-</nav>
-
-<!-- ── Hero ─────────────────────────────────────────────────────────── -->
-<section id="hero">
-  <div class="container">
-    <div class="hero-inner">
-      <div>
-        <div class="hero-badges">
-          <span class="badge badge-green">PaperMC 1.21+</span>
-          <span class="badge badge-blue">Java 21+</span>
-          <span class="badge badge-gold">BungeeCord / Velocity</span>
-          <span class="badge badge-purple">Open Source</span>
-        </div>
-        <h1 class="hero-title">
-          The <span>Ultimate</span><br>Lobby Plugin
-        </h1>
-        <p class="hero-desc">
-          NLobby is a feature-rich lobby plugin for PaperMC servers, purpose-built for 
-          BungeeCord and Velocity proxy networks. From double-jump physics to smart queue 
-          management — everything you need in a single plugin.
-        </p>
-        <div class="hero-actions">
-          <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Download</a>
-          <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
-            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            View on GitHub
-          </a>
-          <a href="#features" class="btn btn-ghost">Explore Features ↓</a>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <div class="stat-value">15+</div>
-            <div class="stat-label">Features</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">2</div>
-            <div class="stat-label">Languages</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">SQLite<br>MySQL</div>
-            <div class="stat-label">Databases</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card -->
-      <div class="hero-card">
-        <div class="hero-card-header">
-          <div class="plugin-icon">🏟️</div>
-          <div class="plugin-meta">
-            <h3>NLobby</h3>
-            <p>by NotPatch · PaperMC Plugin</p>
-          </div>
-        </div>
-        <ul class="feature-list">
-          <li>Double jump with particles &amp; sounds</li>
-          <li>Jet boost hotbar item</li>
-          <li>Navigator GUI server selector</li>
-          <li>Orderly BungeeCord/Velocity queue</li>
-          <li>Coins &amp; level progression system</li>
-          <li>Firework &amp; title join effects</li>
-          <li>Full lobby protection suite</li>
-          <li>SQLite &amp; MySQL with HikariCP</li>
-        </ul>
-        <div class="compatibility">
-          <span class="compat-label">Compatible with:</span>
-          <span class="badge badge-blue">Paper 1.21</span>
-          <span class="badge badge-gold">BungeeCord</span>
-          <span class="badge badge-gold">Velocity</span>
-        </div>
-      </div>
+  <div class="thread-badges">
+    <span class="badge badge-green">PaperMC 1.21+</span>
+    <span class="badge badge-blue">Java 21+</span>
+    <span class="badge badge-gold">BungeeCord / Velocity</span>
+    <span class="badge badge-purple">Open Source</span>
+  </div>
+  <p class="thread-desc">
+    A feature-rich lobby plugin for PaperMC servers, purpose-built for BungeeCord and Velocity proxy networks.
+    From double-jump physics to smart queue management — everything you need in a single, configurable plugin.
+  </p>
+  <div class="thread-actions">
+    <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Download</a>
+    <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
+      <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener" class="btn btn-ghost">🐛 Issues</a>
+  </div>
+  <div class="thread-stats">
+    <div class="stat-item">
+      <span class="stat-value">15+</span>
+      <span class="stat-label">Features</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">2</span>
+      <span class="stat-label">Languages</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">SQLite · MySQL</span>
+      <span class="stat-label">Databases</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">Paper 1.21</span>
+      <span class="stat-label">API Version</span>
     </div>
   </div>
-</section>
+</div>
 
 <!-- ── Features ─────────────────────────────────────────────────────── -->
-<section id="features">
-  <div class="container">
+<div class="thread-section" id="features">
     <h2 class="section-title">Everything Your Lobby Needs</h2>
     <p class="section-sub">Every feature is configurable — enable, disable, or fine-tune from a single <code>config.yml</code>.</p>
     <div class="features-grid">
@@ -686,12 +515,10 @@
       </div>
 
     </div>
-  </div>
-</section>
+</div>
 
 <!-- ── How It Works ──────────────────────────────────────────────────── -->
-<section id="how-it-works">
-  <div class="container">
+<div class="thread-section" id="how-it-works">
     <h2 class="section-title">How It Works</h2>
     <p class="section-sub">NLobby hooks into PaperMC's event system and the BungeeCord/Velocity plugin-messaging channel to coordinate everything seamlessly.</p>
     <div class="how-grid">
@@ -733,12 +560,10 @@
       </div>
 
     </div>
-  </div>
-</section>
+</div>
 
 <!-- ── Configuration Preview ─────────────────────────────────────────── -->
-<section id="config">
-  <div class="container">
+<div class="thread-section" id="config">
     <h2 class="section-title">Configuration Preview</h2>
     <p class="section-sub">All behavior is controlled from a single <code>config.yml</code> — no restarts required after <code>/nlobby reload</code>.</p>
 
@@ -835,11 +660,10 @@
     </div>
 
   </div>
-</section>
+</div>
 
 <!-- ── Commands & Permissions ────────────────────────────────────────── -->
-<section id="commands">
-  <div class="container">
+<div class="thread-section" id="commands">
     <h2 class="section-title">Commands &amp; Permissions</h2>
     <p class="section-sub">All administrative commands require the <code>nlobby.admin</code> permission. Player-facing commands are available by default.</p>
 
@@ -917,7 +741,7 @@
       </table>
     </div>
 
-    <h2 class="section-title" style="font-size: 1.4rem; margin-bottom: 8px;">Permission Nodes</h2>
+    <h2 class="section-title" style="margin-top: 28px; margin-bottom: 8px;">Permission Nodes</h2>
     <div class="cmd-table-wrap">
       <table>
         <thead>
@@ -954,12 +778,10 @@
         </tbody>
       </table>
     </div>
-  </div>
-</section>
+</div>
 
 <!-- ── Media ─────────────────────────────────────────────────────────── -->
-<section id="media">
-  <div class="container">
+<div class="thread-section" id="media">
     <h2 class="section-title">Screenshots &amp; Previews</h2>
     <p class="section-sub">Visual previews of NLobby in action across a live server network.</p>
     <div class="media-grid">
@@ -988,27 +810,21 @@
         <span>Config Overview</span>
       </div>
     </div>
-  </div>
-</section>
+</div>
 
 <!-- ── Download ──────────────────────────────────────────────────────── -->
-<section id="download">
-  <div class="container">
-    <div class="download-inner">
-      <div class="download-copy">
-        <h2>Ready to Deploy?</h2>
-        <p>Drop the JAR into your lobby server's <code>plugins/</code> folder and you're up in minutes. Build from source or grab the latest release directly from GitHub.</p>
-        <div class="download-actions">
-          <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Latest Release</a>
-          <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
-            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            Source Code
-          </a>
-          <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener" class="btn btn-ghost">🐛 Report Issue</a>
-        </div>
-      </div>
-
-      <ol class="install-steps">
+<div class="thread-section" id="download">
+    <h2 class="section-title">Installation</h2>
+    <p class="section-sub">Drop the JAR into your lobby server's <code>plugins/</code> folder — up and running in minutes.</p>
+    <div class="download-actions">
+      <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener" class="btn btn-primary">⬇ Latest Release</a>
+      <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener" class="btn btn-secondary">
+        <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Source Code
+      </a>
+      <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener" class="btn btn-ghost">🐛 Report Issue</a>
+    </div>
+    <ol class="install-steps">
         <li>
           <div class="step-dot">1</div>
           <p>Download the JAR<small>Grab the latest release from the GitHub Releases page.</small></p>
@@ -1030,13 +846,10 @@
           <p>Run <code>/nlobby reload</code><small>Apply changes live — no restart required.</small></p>
         </li>
       </ol>
-    </div>
-  </div>
-</section>
+</div>
 
 <!-- ── Comments ──────────────────────────────────────────────────────── -->
-<section id="comments">
-  <div class="container">
+<div class="thread-section" id="comments">
     <h2 class="section-title">Community Feedback</h2>
     <p class="section-sub">What server owners are saying about NLobby.</p>
     <div class="comments-list">
@@ -1110,22 +923,9 @@
       </div>
 
     </div>
-  </div>
-</section>
+</div>
 
-<!-- ── Footer ────────────────────────────────────────────────────────── -->
-<footer>
-  <div class="container footer-inner">
-    <div class="footer-brand">🏟️ NLobby</div>
-    <div class="footer-links">
-      <a href="https://github.com/NotPatch/NLobby" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/NotPatch/NLobby/releases" target="_blank" rel="noopener">Releases</a>
-      <a href="https://github.com/NotPatch/NLobby/issues" target="_blank" rel="noopener">Issues</a>
-      <a href="https://papermc.io/" target="_blank" rel="noopener">PaperMC</a>
-    </div>
-    <div class="footer-copy">Made with ❤️ by <a href="https://github.com/NotPatch" target="_blank" rel="noopener">NotPatch</a></div>
-  </div>
-</footer>
+</div><!-- end .thread-wrap -->
 
 <!-- ── Scripts ───────────────────────────────────────────────────────── -->
 <script>
