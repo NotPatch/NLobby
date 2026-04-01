@@ -4,8 +4,13 @@ import com.notpatch.nLobby.config.ConfigManager;
 import com.notpatch.nLobby.manager.QueueManager;
 import com.notpatch.nLobby.util.ItemBuilder;
 import com.notpatch.nlib.fastinv.FastInv;
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Map;
@@ -13,12 +18,14 @@ import java.util.Map;
 public class NavigatorGUI extends FastInv {
     private final ConfigManager configManager;
     private final QueueManager queueManager;
+    private final Player viewer;
 
-    public NavigatorGUI(ConfigManager configManager, QueueManager queueManager) {
+    public NavigatorGUI(ConfigManager configManager, QueueManager queueManager, Player viewer) {
         super(configManager.getConfig().getInt("navigator.gui-size", 27),
-                colorize(configManager.getConfig().getString("navigator.gui-title", "&8Navigator")));
+                colorize(resolvePlaceholders(viewer, configManager.getConfig().getString("navigator.gui-title", "&8Navigator"))));
         this.configManager = configManager;
         this.queueManager = queueManager;
+        this.viewer = viewer;
         build();
     }
 
@@ -52,12 +59,13 @@ public class NavigatorGUI extends FastInv {
 
     @SuppressWarnings("unchecked")
     private void addServerButton(Map<?, ?> serverMap) {
-        String name = readString(serverMap, "name", "&aServer");
+        String name = resolvePlaceholders(viewer, readString(serverMap, "name", "&aServer"));
         String materialName = readString(serverMap, "material", "COMPASS");
-        String server = readString(serverMap, "server", "lobby");
+        String server = resolvePlaceholders(viewer, readString(serverMap, "server", "lobby"));
         List<String> lore = serverMap.get("lore") instanceof List<?> loreList
                 ? (List<String>) loreList
                 : List.of();
+        List<String> resolvedLore = resolvePlaceholders(viewer, lore);
 
         int slot = 0;
         Object slotObj = serverMap.get("slot");
@@ -74,15 +82,16 @@ public class NavigatorGUI extends FastInv {
         try {
             var itemStack = ItemBuilder.of(Material.valueOf(materialName.toUpperCase()))
                     .name(name)
-                    .lore(lore)
+                    .lore(resolvedLore)
                     .build();
             setItem(slot, itemStack, event -> {
                 org.bukkit.entity.Player player = (org.bukkit.entity.Player) event.getWhoClicked();
-                if (player.isOp()) {
+                if (player.hasPermission("nlobby.queue.bypass")) {
                     queueManager.connectPlayerDirect(player, server);
                 } else {
                     queueManager.joinQueue(player, server);
                 }
+                player.closeInventory();
             });
         } catch (IllegalArgumentException ignored) {
         }
@@ -94,6 +103,35 @@ public class NavigatorGUI extends FastInv {
     }
 
     private static String colorize(String text) {
+        if (text == null) {
+            return "";
+        }
         return text.replace('&', '§');
+    }
+
+    private static String resolvePlaceholders(Player player, String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        if (player == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            return text;
+        }
+
+        try {
+            return PlaceholderAPI.setPlaceholders(player, text);
+        } catch (Throwable ignored) {
+            return text;
+        }
+    }
+
+    private static List<String> resolvePlaceholders(Player player, List<String> lines) {
+        if (lines == null || lines.isEmpty()) {
+            return List.of();
+        }
+        List<String> resolved = new ArrayList<>(lines.size());
+        for (String line : lines) {
+            resolved.add(resolvePlaceholders(player, line));
+        }
+        return resolved;
     }
 }
