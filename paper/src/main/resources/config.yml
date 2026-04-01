@@ -71,10 +71,8 @@ chat:
 join-message:
   welcome:
     enabled: true
-    text: "&6Sunucuya hoş geldin, &f%player%&6!"
   broadcast:
     enabled: true
-    text: "&a%player% &7lobiye katıldı."
 
 navigator:
   gui-title: '&8Navigator'
