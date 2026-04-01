@@ -69,6 +69,9 @@ public class NLobbyCommand implements BasicCommand {
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack stack, @NotNull String[] args) {
+        if (args.length == 0){
+            return Arrays.asList("reload", "setspawn", "version");
+        }
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return Arrays.asList("reload", "setspawn", "version").stream()
