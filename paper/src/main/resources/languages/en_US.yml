@@ -44,6 +44,7 @@ queue:
   joined: "&aJoined queue: &f%server% &7(%position%. position)"
   left: "&cLeft queue."
   sending: "&aConnecting to: &f%server%"
+  transfer-failed: "&cFailed to connect to %server%. The server may be offline."
   already-in-queue: "&cYou're already in a queue."
   command:
     usage: "&c/queue <player|*> <server>"
