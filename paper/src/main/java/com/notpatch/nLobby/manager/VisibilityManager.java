@@ -3,13 +3,19 @@ package com.notpatch.nLobby.manager;
 import com.notpatch.nLobby.LanguageLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class VisibilityManager {
+    private final Plugin plugin;
     private final Set<UUID> hiddenPlayers = new HashSet<>();
+
+    public VisibilityManager(Plugin plugin) {
+        this.plugin = plugin;
+    }
 
     public void toggle(Player player) {
         if (hiddenPlayers.contains(player.getUniqueId())) {
@@ -23,7 +29,7 @@ public class VisibilityManager {
         hiddenPlayers.add(player.getUniqueId());
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (!other.equals(player)) {
-                player.hidePlayer(null, other);
+                player.hidePlayer(plugin, other);
             }
         }
         player.sendMessage(LanguageLoader.getMessage("visibility.hidden"));
@@ -33,7 +39,7 @@ public class VisibilityManager {
         hiddenPlayers.remove(player.getUniqueId());
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (!other.equals(player)) {
-                player.showPlayer(null, other);
+                player.showPlayer(plugin, other);
             }
         }
         player.sendMessage(LanguageLoader.getMessage("visibility.shown"));
@@ -43,7 +49,7 @@ public class VisibilityManager {
         for (UUID uuid : hiddenPlayers) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
-                player.hidePlayer(null, newPlayer);
+                player.hidePlayer(plugin, newPlayer);
             }
         }
     }
