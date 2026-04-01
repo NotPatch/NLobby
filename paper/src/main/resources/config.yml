@@ -68,22 +68,48 @@ chat:
   enabled: true
   format: "&7[&f%level%&7] &f%player% &8» &f%message%"
 
+join-message:
+  welcome:
+    enabled: true
+    text: "&6Sunucuya hoş geldin, &f%player%&6!"
+  broadcast:
+    enabled: true
+    text: "&a%player% &7lobiye katıldı."
+
 navigator:
-  gui-title: "&8Navigator"
+  gui-title: '&8Navigator'
   gui-size: 27
   servers:
-    - name: "&aSurvival"
+    - name: '&aBoxPvP'
+      material: ELYTRA
+      lore:
+        - '&7Bağlanmak için tıkla'
+      slot: 11
+      server: boxpvp
+    - name: '&cTowny'
       material: GRASS_BLOCK
       lore:
-        - "&7Bağlanmak için tıkla"
-      slot: 11
-      server: survival
-    - name: "&cSkyWars"
-      material: FEATHER
+        - '&7Bağlanmak için tıkla'
+      slot: 12
+      server: towny
+    - name: '&cCrystal PvP'
+      material: END_CRYSTAL
       lore:
-        - "&7Bağlanmak için tıkla"
+        - '&7Bağlanmak için tıkla'
       slot: 13
-      server: skywars
+      server: cpractice
+    - name: '&cMinigame'
+      material: RED_WOOL
+      lore:
+        - '&7Bağlanmak için tıkla'
+      slot: 14
+      server: ddk
+    - name: '&cPractice'
+      material: NETHERITE_SWORD
+      lore:
+        - '&7Bağlanmak için tıkla'
+      slot: 15
+      server: practice
 
 join-effects:
   firework: true
@@ -96,13 +122,15 @@ join-effects:
 
 queue:
   tick-interval: 3
+  connect-timeout-seconds: 4
   show-position-actionbar: true
   actionbar-text: "&6Sıra: &f%position% &7/ &f%total% &8| &7Sunucu: &f%server%"
   servers:
-    - survival
-    - skywars
-    - creative
-    - pvp
+    - cpractice
+    - boxmining
+    - towny
+    - minigame
+    - practice
 
 void-teleport:
   enabled: true
