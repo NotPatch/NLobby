@@ -1,10 +1,11 @@
 package com.notpatch.nLobby.manager;
 
-import com.notpatch.nLobby.NLobby;
 import com.notpatch.nLobby.LanguageLoader;
+import com.notpatch.nLobby.NLobby;
 import com.notpatch.nLobby.config.ConfigManager;
 import com.notpatch.nLobby.model.QueueEntry;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,7 +21,9 @@ public class QueueManager {
     private static final String BUNGEE_CHANNEL = "BungeeCord";
     private final Map<String, LinkedList<QueueEntry>> queues = new HashMap<>();
     private final Map<UUID, String> playerQueues = new HashMap<>();
-    private int taskId = -1;
+    private final Map<UUID, Integer> pendingTransferTasks = new HashMap<>();
+    private int tickTaskId = -1;
+    private int actionBarTaskId = -1;
 
     public QueueManager(NLobby plugin, ConfigManager configManager) {
         this.plugin = plugin;
@@ -29,18 +32,22 @@ public class QueueManager {
 
     public void start() {
         int interval = configManager.getQueueTickInterval() * 20;
-        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::processTick, 0, interval);
+        tickTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::processTick, interval, interval);
+        actionBarTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAllActionBars, 20, 20);
     }
 
     public void stop() {
-        if (taskId != -1) {
+        if (tickTaskId != -1) Bukkit.getScheduler().cancelTask(tickTaskId);
+        if (actionBarTaskId != -1) Bukkit.getScheduler().cancelTask(actionBarTaskId);
+        for (Integer taskId : pendingTransferTasks.values()) {
             Bukkit.getScheduler().cancelTask(taskId);
         }
+        pendingTransferTasks.clear();
     }
 
     public boolean joinQueue(Player player, String serverName) {
         if (playerQueues.containsKey(player.getUniqueId())) {
-            player.sendMessage(LanguageLoader.getMessage("queue.already-in-queue"));
+            player.sendMessage(mm("<red>✖ Zaten bir sunucu sırasındasın."));
             return false;
         }
 
@@ -48,12 +55,16 @@ public class QueueManager {
         queues.computeIfAbsent(serverName, k -> new LinkedList<>()).add(entry);
         playerQueues.put(player.getUniqueId(), serverName);
 
-        int position = queues.get(serverName).indexOf(entry) + 1;
-        String msg = LanguageLoader.getMessage("queue.joined");
-        msg = msg.replace("%server%", serverName).replace("%position%", String.valueOf(position));
-        player.sendMessage(msg);
+        int position = queues.get(serverName).size();
+        int total = queues.get(serverName).size();
+        int eta = (int) Math.ceil((double) position) * configManager.getQueueTickInterval();
 
-        updateActionBar(player);
+        player.sendMessage(mm("<gray>                                        "));
+        player.sendMessage(mm("<yellow>⌛ <white><bold>" + serverName + "</bold></white> <yellow>sırasına girdin!"));
+        player.sendMessage(mm("   <dark_gray>▸ <gray>Pozisyon: <white>" + position + "<gray>/" + total
+                + "  <dark_gray>|  <gray>Tahmini: <white>~" + eta + "sn"));
+        player.sendMessage(mm("<gray>                                        "));
+
         return true;
     }
 
@@ -66,7 +77,7 @@ public class QueueManager {
             queue.removeIf(e -> e.getUuid().equals(player.getUniqueId()));
         }
 
-        player.sendMessage(LanguageLoader.getMessage("queue.left"));
+        player.sendMessage(mm("<red>✖ <gray>Sıradan çıktın."));
     }
 
     private void processTick() {
@@ -81,55 +92,40 @@ public class QueueManager {
 
             if (player != null && player.isOnline()) {
                 playerQueues.remove(player.getUniqueId());
+                sendConnecting(player, serverName);
                 connectPlayer(player, serverName);
             }
         }
     }
 
+    private void sendConnecting(Player player, String serverName) {
+        player.sendActionBar(mm("<green>✔ <white>Bağlanılıyor → <green><bold>" + serverName + "</bold></green>..."));
+        player.sendMessage(mm("<green>✔ <gray>Sıran geldi! <white><bold>" + serverName + "</bold></white> <gray>sunucusuna aktarılıyorsun..."));
+    }
+
     private void connectPlayer(Player player, String serverName) {
-        String msg = LanguageLoader.getMessage("queue.sending");
-        msg = msg.replace("%server%", serverName);
-        player.sendMessage(msg);
-
-        boolean registered = Bukkit.getMessenger().isOutgoingChannelRegistered(plugin, BUNGEE_CHANNEL);
-
+        scheduleTransferFailCheck(player, serverName);
         try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
              DataOutputStream out = new DataOutputStream(byteStream)) {
             out.writeUTF("Connect");
             out.writeUTF(serverName);
-            byte[] payload = byteStream.toByteArray();
-            player.sendPluginMessage(plugin, BUNGEE_CHANNEL, payload);
-
+            player.sendPluginMessage(plugin, BUNGEE_CHANNEL, byteStream.toByteArray());
         } catch (IOException e) {
+            clearPendingTransfer(player.getUniqueId());
             plugin.getLogger().warning("Failed to send proxy connect message for " + player.getName() + ": " + e.getMessage());
+            sendTransferFailed(player, serverName);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE,
-                    "Proxy connect message threw exception for " + player.getName() + " -> " + serverName, e);
+            clearPendingTransfer(player.getUniqueId());
+            plugin.getLogger().log(Level.SEVERE, "Proxy connect error: " + player.getName() + " -> " + serverName, e);
+            sendTransferFailed(player, serverName);
         }
     }
 
     public void connectPlayerDirect(Player player, String serverName) {
-        String msg = LanguageLoader.getMessage("queue.sending");
-        msg = msg.replace("%server%", serverName);
-        player.sendMessage(msg);
-
         leaveQueue(player);
-
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-             DataOutputStream out = new DataOutputStream(byteStream)) {
-            out.writeUTF("Connect");
-            out.writeUTF(serverName);
-            byte[] payload = byteStream.toByteArray();
-            player.sendPluginMessage(plugin, BUNGEE_CHANNEL, payload);
-
-        } catch (IOException e) {
-            plugin.getLogger().warning("Failed to send direct proxy connect message for " + player.getName() + ": " + e.getMessage());
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE,
-                    "Direct proxy connect message threw exception for " + player.getName() + " -> " + serverName, e);
-        }
+        sendConnecting(player, serverName);
+        connectPlayer(player, serverName);
     }
-
 
     public void updateActionBar(Player player) {
         if (!configManager.isQueueShowPositionActionBar()) return;
@@ -140,22 +136,24 @@ public class QueueManager {
         LinkedList<QueueEntry> queue = queues.get(serverName);
         if (queue == null) return;
 
-        int position = 0;
+        int position = -1;
         for (int i = 0; i < queue.size(); i++) {
             if (queue.get(i).getUuid().equals(player.getUniqueId())) {
                 position = i + 1;
                 break;
             }
         }
+        if (position < 0) return;
 
-        if (position > 0) {
-            String actionbar = configManager.getQueueActionBarText();
-            actionbar = actionbar.replace("%position%", String.valueOf(position));
-            actionbar = actionbar.replace("%total%", String.valueOf(queue.size()));
-            actionbar = actionbar.replace("%server%", serverName);
+        int total = queue.size();
+        int eta = (int) Math.ceil((double) position) * configManager.getQueueTickInterval();
+        String bar = buildProgressBar(position, total);
 
-            player.sendActionBar(Component.text(colorize(actionbar)));
-        }
+        player.sendActionBar(mm(
+                "<yellow>⌛ " + bar + " <gray>Sıra: <white>" + position + "<gray>/" + total
+                        + " <dark_gray>| <gray>~<white>" + eta + "sn"
+                        + " <dark_gray>| <aqua>" + serverName
+        ));
     }
 
     public void updateAllActionBars() {
@@ -165,11 +163,35 @@ public class QueueManager {
     }
 
     public void onPlayerQuit(Player player) {
+        clearPendingTransfer(player.getUniqueId());
         leaveQueue(player);
     }
 
-    private String colorize(String text) {
-        return text.replace("&", "§");
+    private void scheduleTransferFailCheck(Player player, String serverName) {
+        UUID uuid = player.getUniqueId();
+        clearPendingTransfer(uuid);
+        long delayTicks = Math.max(20L, configManager.getQueueConnectTimeoutSeconds() * 20L);
+        int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            pendingTransferTasks.remove(uuid);
+            Player onlinePlayer = Bukkit.getPlayer(uuid);
+            if (onlinePlayer != null && onlinePlayer.isOnline()) {
+                sendTransferFailed(onlinePlayer, serverName);
+            }
+        }, delayTicks);
+        pendingTransferTasks.put(uuid, taskId);
+    }
+
+    private void clearPendingTransfer(UUID uuid) {
+        Integer taskId = pendingTransferTasks.remove(uuid);
+        if (taskId != null) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+    }
+
+    private void sendTransferFailed(Player player, String serverName) {
+        String message = LanguageLoader.getMessage("queue.transfer-failed")
+                .replace("%server%", serverName);
+        player.sendMessage(message);
     }
 
     public int getQueuePosition(Player player) {
@@ -180,14 +202,23 @@ public class QueueManager {
         if (queue == null) return -1;
 
         for (int i = 0; i < queue.size(); i++) {
-            if (queue.get(i).getUuid().equals(player.getUniqueId())) {
-                return i + 1;
-            }
+            if (queue.get(i).getUuid().equals(player.getUniqueId())) return i + 1;
         }
         return -1;
     }
 
     public String getPlayerQueue(Player player) {
         return playerQueues.get(player.getUniqueId());
+    }
+
+    private String buildProgressBar(int position, int total) {
+        int barLength = 10;
+        int filled = barLength - (int) Math.ceil(((double) position / total) * barLength);
+        filled = Math.max(0, Math.min(barLength, filled));
+        return "<green>" + "█".repeat(filled) + "</green><dark_gray>" + "█".repeat(barLength - filled) + "</dark_gray>";
+    }
+
+    private Component mm(String text) {
+        return MiniMessage.miniMessage().deserialize(text);
     }
 }

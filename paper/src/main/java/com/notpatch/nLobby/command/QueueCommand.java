@@ -81,6 +81,12 @@ public class QueueCommand implements BasicCommand {
             return Collections.emptyList();
         }
 
+        if (args.length == 0) {
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+        }
+
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return Bukkit.getOnlinePlayers().stream()
