@@ -1,10 +1,16 @@
 package com.notpatch.nLobby.velocity;
 
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
+import net.elytrium.limboapi.api.Limbo;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -19,13 +25,22 @@ public class VelocityQueueManager {
 
     private final ConcurrentLinkedQueue<UUID> pendingQueue = new ConcurrentLinkedQueue<>();
     private final ConcurrentHashMap<UUID, Boolean> allowedPlayers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, LimboQueueSessionHandler> sessionHandlers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, RegisteredServer> queuedTargets = new ConcurrentHashMap<>();
+
     private ScheduledTask processingTask;
-    private RegisteredServer limboServer;
+    private ScheduledTask actionBarTask;
+    private Limbo limbo;
+    private Object plugin;
 
     public VelocityQueueManager(ProxyServer proxyServer, Logger logger, VelocityQueueConfig config) {
         this.proxyServer = proxyServer;
         this.logger = logger;
         this.config = config;
+    }
+
+    public void setLimbo(Limbo limbo) {
+        this.limbo = limbo;
     }
 
     public void start(Object plugin) {
@@ -34,123 +49,139 @@ public class VelocityQueueManager {
             return;
         }
 
-        String limboServerName = config.getQueueServer();
+        this.plugin = plugin;
+        long tickIntervalMs = config.getTickInterval() * 1000L;
 
-        // Find virtual limbo server (created by LimboAPI Velocity plugin)
-        this.limboServer = proxyServer.getServer(limboServerName).orElse(null);
-
-        if (this.limboServer != null) {
-            logger.info("✅ Limbo server found: " + limboServerName);
-        } else {
-            logger.severe("❌ Limbo server '" + limboServerName + "' not found!");
-            logger.severe("Make sure LimboAPI Velocity plugin is installed and configured!");
-            logger.severe("Download from: https://github.com/Elytrium/LimboAPI/releases");
-        }
-
-        // Start the queue processing scheduler
-        long tickIntervalMs = config.getTickInterval() * 1000; // Convert seconds to milliseconds
         processingTask = proxyServer.getScheduler()
                 .buildTask(plugin, this::processTick)
                 .delay(tickIntervalMs, TimeUnit.MILLISECONDS)
                 .repeat(tickIntervalMs, TimeUnit.MILLISECONDS)
                 .schedule();
 
-        logger.info("NLobby Velocity Queue started. Max slots: " + config.getMaxSlots() +
-                ", Slots per tick: " + config.getSlotsPerTick());
+        actionBarTask = proxyServer.getScheduler()
+                .buildTask(plugin, this::sendActionBars)
+                .delay(1, TimeUnit.SECONDS)
+                .repeat(1, TimeUnit.SECONDS)
+                .schedule();
+
+        logger.info("NLobby Velocity Queue started. Slots per tick: " + config.getSlotsPerTick()
+                + ", Tick interval: " + config.getTickInterval() + "s");
     }
 
     public void stop() {
-        if (processingTask != null) {
-            processingTask.cancel();
-            logger.info("NLobby Velocity Queue stopped.");
-        }
+        if (processingTask != null) processingTask.cancel();
+        if (actionBarTask != null) actionBarTask.cancel();
+        logger.info("NLobby Velocity Queue stopped.");
     }
 
-    /**
-     * Check if a player is allowed to join
-     */
     public boolean isAllowed(UUID uuid) {
         return allowedPlayers.containsKey(uuid);
     }
 
-    /**
-     * Allow a player to join (add to allowed list)
-     * No TTL - player stays until they login or disconnect
-     */
     public void allow(UUID uuid) {
         allowedPlayers.put(uuid, true);
     }
 
-    /**
-     * Remove a player from allowed list (after they join)
-     */
     public void removeAllowed(UUID uuid) {
         allowedPlayers.remove(uuid);
     }
 
-    /**
-     * Add a player to the queue
-     * Returns the position in queue (1-indexed)
-     */
-    public int addToQueue(UUID uuid) {
+    public int addToQueue(UUID uuid, RegisteredServer targetServer) {
+        queuedTargets.put(uuid, targetServer);
         if (pendingQueue.contains(uuid)) {
             return getPosition(uuid);
         }
-
         pendingQueue.add(uuid);
         return getPosition(uuid);
     }
 
-    /**
-     * Get player's position in queue (1-indexed, -1 if not in queue)
-     */
+    public void registerSessionHandler(UUID uuid, LimboQueueSessionHandler handler) {
+        sessionHandlers.put(uuid, handler);
+    }
+
+    public void unregisterSessionHandler(UUID uuid) {
+        sessionHandlers.remove(uuid);
+    }
+
     public int getPosition(UUID uuid) {
         int position = 1;
         for (UUID queued : pendingQueue) {
-            if (queued.equals(uuid)) {
-                return position;
-            }
+            if (queued.equals(uuid)) return position;
             position++;
         }
         return -1;
     }
 
-    /**
-     * Get total queue size
-     */
     public int getQueueSize() {
         return pendingQueue.size();
     }
 
-    /**
-     * Remove a player from queue (e.g., on disconnect)
-     */
     public void removeFromQueue(UUID uuid) {
         pendingQueue.remove(uuid);
         removeAllowed(uuid);
+        sessionHandlers.remove(uuid);
+        queuedTargets.remove(uuid);
     }
 
-    /**
-     * Process one tick: move N players from queue to allowed
-     * Players stay in allowed list until they login or disconnect
-     */
     private void processTick() {
-        // Calculate available slots
-        int currentlyAllowed = allowedPlayers.size();
-        int availableSlots = config.getMaxSlots() - currentlyAllowed;
-
-        if (availableSlots <= 0) {
-            return; // No slots available
-        }
-
-        // Move up to slotsPerTick players from queue to allowed
-        int toMove = Math.min(availableSlots, config.getSlotsPerTick());
-        for (int i = 0; i < toMove; i++) {
+        for (int i = 0; i < config.getSlotsPerTick(); i++) {
             UUID nextPlayer = pendingQueue.poll();
-            if (nextPlayer == null) {
-                break;
+            if (nextPlayer == null) break;
+
+            LimboQueueSessionHandler handler = sessionHandlers.remove(nextPlayer);
+            RegisteredServer target = queuedTargets.remove(nextPlayer);
+
+            if (handler == null || target == null) {
+                removeAllowed(nextPlayer);
+                continue;
             }
+
             allow(nextPlayer);
+            logger.info("Released " + nextPlayer + " from queue → " + target.getServerInfo().getName());
+            proxyServer.getPlayer(nextPlayer).ifPresent(p ->
+                    p.sendActionBar(MiniMessage.miniMessage().deserialize(
+                            "<green>✔ Bağlanılıyor → <white>" + target.getServerInfo().getName() + "</white>..."
+                    ))
+            );
+
+            handler.releaseToServer(target);
         }
+    }
+
+    private void sendActionBars() {
+        if (pendingQueue.isEmpty()) return;
+
+        int total = pendingQueue.size();
+        List<UUID> snapshot = new ArrayList<>(pendingQueue);
+
+        for (int i = 0; i < snapshot.size(); i++) {
+            UUID uuid = snapshot.get(i);
+            int position = i + 1;
+            int ticksNeeded = (int) Math.ceil((double) position / config.getSlotsPerTick());
+            int secondsLeft = ticksNeeded * config.getTickInterval();
+
+            RegisteredServer target = queuedTargets.get(uuid);
+            String serverName = target != null ? target.getServerInfo().getName() : "?";
+
+            String bar = buildProgressBar(position, total);
+
+            Component actionBar = MiniMessage.miniMessage().deserialize(
+                    "<yellow>⌛ <white>" + bar + " <gray>Sıra: <white>" + position + "<gray>/" + total
+                            + " <dark_gray>| <gray>~<white>" + secondsLeft + "sn"
+                            + " <dark_gray>| <aqua>" + serverName
+            );
+
+            proxyServer.getPlayer(uuid).ifPresent(p -> p.sendActionBar(actionBar));
+        }
+    }
+
+    private String buildProgressBar(int position, int total) {
+        int barLength = 10;
+        int filled = barLength - (int) Math.ceil(((double) position / total) * barLength);
+        filled = Math.max(0, Math.min(barLength, filled));
+
+        String green = "<green>" + "█".repeat(filled) + "</green>";
+        String gray = "<dark_gray>" + "█".repeat(barLength - filled) + "</dark_gray>";
+        return green + gray;
     }
 }

@@ -26,7 +26,6 @@ public class VelocityQueueConfig {
     private void loadConfig(Path configPath) {
         try {
             if (!Files.exists(configPath)) {
-                // Use defaults if file doesn't exist
                 loadDefaults();
                 return;
             }
