@@ -97,7 +97,7 @@ public final class NLobby extends JavaPlugin {
 
         spawnManager = new SpawnManager(configManager);
         hotbarManager = new HotbarManager(configManager);
-        visibilityManager = new VisibilityManager();
+        visibilityManager = new VisibilityManager(this);
         doubleJumpManager = new DoubleJumpManager(configManager);
         queueManager = new QueueManager(this, configManager);
         chatManager = new ChatManager(configManager, playerCache);
