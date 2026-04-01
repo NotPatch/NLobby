@@ -89,7 +89,7 @@ public class PlayerInteractListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        NavigatorGUI gui = new NavigatorGUI(configManager, queueManager);
+        NavigatorGUI gui = new NavigatorGUI(configManager, queueManager, player);
         gui.open(player);
     }
 
