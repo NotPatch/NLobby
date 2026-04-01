@@ -4,13 +4,13 @@ import com.notpatch.nLobby.model.LobbyPlayer;
 import lombok.Getter;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class PlayerCache {
-    private final Map<UUID, LobbyPlayer> cache = new HashMap<>();
+    private final Map<UUID, LobbyPlayer> cache = new ConcurrentHashMap<>();
 
     public void put(UUID uuid, LobbyPlayer lobbyPlayer) {
         cache.put(uuid, lobbyPlayer);
