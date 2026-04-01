@@ -44,6 +44,7 @@ queue:
   joined: "&aSıraya girdin: &f%server% &7(%position%. sırada)"
   left: "&cSıradan çıktın."
   sending: "&aAktarılıyorsun: &f%server%"
+  transfer-failed: "&c%server% sunucusuna bağlanılamadı. Sunucu kapalı olabilir."
   already-in-queue: "&cZaten bir sırada görünesin."
   command:
     usage: "&c/queue <oyuncu|*> <sunucu>"
