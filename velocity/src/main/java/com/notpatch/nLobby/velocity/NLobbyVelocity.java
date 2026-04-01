@@ -3,10 +3,16 @@ package com.notpatch.nLobby.velocity;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
+import net.elytrium.limboapi.api.Limbo;
+import net.elytrium.limboapi.api.LimboFactory;
+import net.elytrium.limboapi.api.chunk.Dimension;
+import net.elytrium.limboapi.api.chunk.VirtualWorld;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +22,10 @@ import java.util.logging.Logger;
     id = "nlobby-velocity",
     name = "NLobby Velocity",
     version = "1.0-SNAPSHOT",
-    authors = {"notpatch"}
+    authors = {"notpatch"},
+    dependencies = {
+        @Dependency(id = "limboapi")
+    }
 )
 @Getter
 public class NLobbyVelocity {
@@ -39,13 +48,10 @@ public class NLobbyVelocity {
         logger.info("NLobby Velocity plugin is initializing...");
 
         try {
-            // Create data directory if it doesn't exist
             Files.createDirectories(dataDirectory);
 
-            // Load configuration
             Path configPath = dataDirectory.resolve("config.yml");
             if (!Files.exists(configPath)) {
-                // Copy default config from resources
                 try (var defaultConfig = getClass().getClassLoader().getResourceAsStream("config.yml")) {
                     if (defaultConfig != null) {
                         Files.copy(defaultConfig, configPath);
@@ -59,14 +65,23 @@ public class NLobbyVelocity {
             }
 
             queueConfig = new VelocityQueueConfig(configPath);
-
-            // Initialize queue manager
             queueManager = new VelocityQueueManager(proxyServer, logger, queueConfig);
+            LimboFactory limboFactory = proxyServer.getPluginManager()
+                    .getPlugin("limboapi")
+                    .flatMap(PluginContainer::getInstance)
+                    .map(LimboFactory.class::cast)
+                    .orElseThrow(() -> new RuntimeException("LimboAPI plugin not found! Install LimboAPI on Velocity."));
+            VirtualWorld world = limboFactory.createVirtualWorld(
+                    Dimension.OVERWORLD,
+                    0.0, 64.0, 0.0,
+                    0.0f, 0.0f
+            );
+            Limbo limbo = limboFactory.createLimbo(world);
+            queueManager.setLimbo(limbo);
+            logger.info("LimboAPI virtual limbo created successfully!");
 
-            // Register event listener
             proxyServer.getEventManager().register(this, new VelocityQueueListener(queueManager, logger));
-
-            // Start the queue processing task
+            proxyServer.getCommandManager().register("nlqueue", new VelocityQueueCommand(queueManager));
             queueManager.start(this);
 
             logger.info("NLobby Velocity plugin loaded successfully!");
