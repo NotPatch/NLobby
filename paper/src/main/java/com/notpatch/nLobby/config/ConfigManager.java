@@ -133,17 +133,10 @@ public class ConfigManager {
         return getConfig().getBoolean("join-message.welcome.enabled", true);
     }
 
-    public String getJoinWelcomeText() {
-        return getConfig().getString("join-message.welcome.text", "&6Sunucuya hoş geldin, &f%player%&6!");
-    }
-
     public boolean isJoinBroadcastEnabled() {
         return getConfig().getBoolean("join-message.broadcast.enabled", true);
     }
 
-    public String getJoinBroadcastText() {
-        return getConfig().getString("join-message.broadcast.text", "&a%player% &7lobiye katıldı.");
-    }
 
     public boolean isBossBarEnabled() {
         return getConfig().getBoolean("bossbar.enabled", true);
