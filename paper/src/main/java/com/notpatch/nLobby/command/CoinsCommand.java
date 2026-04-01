@@ -189,6 +189,10 @@ public class CoinsCommand implements BasicCommand {
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack stack, @NotNull String[] args) {
+        if (args.length == 0) {
+            return Arrays.asList("give", "take", "set", "check");
+        }
+
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return Arrays.asList("give", "take", "set", "check").stream()
@@ -206,11 +210,11 @@ public class CoinsCommand implements BasicCommand {
 
     @Override
     public boolean canUse(@NotNull CommandSender sender) {
-        return true;
+        return sender.hasPermission("nlobby.coins");
     }
 
     @Override
     public @Nullable String permission() {
-        return null;
+        return "nlobby.coins";
     }
 }
