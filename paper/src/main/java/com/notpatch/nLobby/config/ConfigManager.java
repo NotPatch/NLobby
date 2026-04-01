@@ -129,6 +129,22 @@ public class ConfigManager {
         return getConfig().getString("chat.format", "&7[&f%level%&7] &f%player% &8» &f%message%");
     }
 
+    public boolean isJoinWelcomeEnabled() {
+        return getConfig().getBoolean("join-message.welcome.enabled", true);
+    }
+
+    public String getJoinWelcomeText() {
+        return getConfig().getString("join-message.welcome.text", "&6Sunucuya hoş geldin, &f%player%&6!");
+    }
+
+    public boolean isJoinBroadcastEnabled() {
+        return getConfig().getBoolean("join-message.broadcast.enabled", true);
+    }
+
+    public String getJoinBroadcastText() {
+        return getConfig().getString("join-message.broadcast.text", "&a%player% &7lobiye katıldı.");
+    }
+
     public boolean isBossBarEnabled() {
         return getConfig().getBoolean("bossbar.enabled", true);
     }
@@ -149,6 +165,10 @@ public class ConfigManager {
         return getConfig().getString("queue.actionbar-text", "&6Sıra: &f%position% &7/ &f%total% &8| &7Sunucu: &f%server%");
     }
 
+    public int getQueueConnectTimeoutSeconds() {
+        return getConfig().getInt("queue.connect-timeout-seconds", 4);
+    }
+
     public boolean isVoidTeleportEnabled() {
         return getConfig().getBoolean("void-teleport.enabled", true);
     }
@@ -156,6 +176,7 @@ public class ConfigManager {
     public double getVoidTeleportMinY() {
         return getConfig().getDouble("void-teleport.min-y", 0.0D);
     }
+
 
     public List<String> getServers() {
         return getConfig().getStringList("queue.servers");
