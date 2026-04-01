@@ -101,6 +101,14 @@ public class DirectCommand implements BasicCommand {
             return Collections.emptyList();
         }
 
+        if (args.length == 0) {
+            List<String> suggestions = Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+            suggestions.add(0, "*");
+            return suggestions;
+        }
+
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             List<String> suggestions = Bukkit.getOnlinePlayers().stream()
