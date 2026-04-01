@@ -1,13 +1,14 @@
 package com.notpatch.nLobby.listener;
 
-import com.notpatch.nLobby.NLobby;
 import com.notpatch.nLobby.LanguageLoader;
+import com.notpatch.nLobby.NLobby;
 import com.notpatch.nLobby.cache.PlayerCache;
 import com.notpatch.nLobby.database.PlayerDAO;
 import com.notpatch.nLobby.manager.HotbarManager;
 import com.notpatch.nLobby.manager.SpawnManager;
 import com.notpatch.nLobby.manager.VisibilityManager;
 import com.notpatch.nLobby.model.LobbyPlayer;
+import com.notpatch.nlib.util.ColorUtil;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -65,11 +66,19 @@ public class PlayerJoinListener implements Listener {
 
                     hotbarManager.giveHotbarItems(player);
 
-                    String welcomeMsg = LanguageLoader.getMessage("join.welcome");
-                    player.sendMessage(welcomeMsg.replace("%player%", player.getName()));
+                    if (plugin.getConfigManager().isJoinWelcomeEnabled()) {
+                        String welcomeMsg = formatJoinMessage(LanguageLoader.getMessage("join.welcome"), player, finalLobbyPlayer);
+                        if (!welcomeMsg.isEmpty()) {
+                            player.sendMessage(welcomeMsg);
+                        }
+                    }
 
-                    String broadcastMsg = LanguageLoader.getMessage("join.broadcast");
-                    Bukkit.broadcast(Component.text(broadcastMsg.replace("%player%", player.getName())));
+                    if (plugin.getConfigManager().isJoinBroadcastEnabled()) {
+                        String broadcastMsg = formatJoinMessage(LanguageLoader.getMessage("join.broadcast"), player, finalLobbyPlayer);
+                        if (!broadcastMsg.isEmpty()) {
+                            Bukkit.broadcast(Component.text(broadcastMsg));
+                        }
+                    }
 
                     if (visibilityManager != null) {
                         visibilityManager.onPlayerJoin(player);
@@ -83,4 +92,12 @@ public class PlayerJoinListener implements Listener {
 
     @Setter
     private VisibilityManager visibilityManager;
+
+    private String formatJoinMessage(String template, Player player, LobbyPlayer lobbyPlayer) {
+        return ColorUtil.hexColor(template
+                .replace("%player%", player.getName())
+                .replace("%coins%", String.valueOf(lobbyPlayer.getCoins()))
+                .replace("%level%", String.valueOf(lobbyPlayer.getLevel()))
+        ).trim();
+    }
 }
